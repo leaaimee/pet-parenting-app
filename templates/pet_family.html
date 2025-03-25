@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Pet Family{% endblock %}
+
+{% block header %}Your Pet Family{% endblock %}
+
+
+{% block content %}
+
+  <h2>Your Pets 🐾</h2>
+    {if user_pets %}
+     <ul>
+        {% for pet in user_pets %}
+         <li>
+             <a href=" {{ url_for('pets.pet_profile', pet_id=pet.id) }}">
+                 {{ pet.name }} ({{ pet.species}})
+             </a>
+         </li>
+         {% endfor %}
+     </ul>
+    {% end if %}
+
+
+  <h2>Pets Shared With You 🐶🐱</h2>
+  {% if friend_pets %}
+    <ul>
+      {% for pet in friend_pets %}
+        <li>
+          <a href="{{ url_for('pets.pet_profile', pet_id=pet.id) }}">
+            {{ pet.name }} ({{ pet.species }}) — shared with you
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No pets have been shared with you yet.</p>
+  {% endif %}
+
+{% endblock %}

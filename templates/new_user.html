@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Pet Family{% endblock %}
+
+{% block header %}New User{% endblock %}
+
+
+{% block content %}
+<h2>New User</h2>
+
+
+<form method="POST" action="{{ url_for('users.register') }}">
+    {{ form.hidden_tag() }}
+
+    <div>
+        {{ form.name.label }}
+        {{ form.name(class="form-control") }}
+    </div>
+
+    <div>
+        {{ form.email.label }}
+        {{ form.email(class="form-control") }}
+    </div>
+
+    <div>
+        {{ form.password.label }}
+        {{ form.password(class="form-control") }}
+    </div>
+
+    <button type="submit" class="btn btn-dark">{{ form.submit.label }}</button>
+</form>
+
+{% endblock %}
