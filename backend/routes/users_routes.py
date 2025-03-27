@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for
+from flask import Blueprint, render_template, redirect, url_for, request
 from flask_login import login_required, current_user
 from backend.forms.user_form import RegistrationForm
 from backend.models.users_models import Users, db
@@ -6,13 +6,14 @@ from werkzeug.security import generate_password_hash
 
 users_bp = Blueprint("users", __name__)
 
+
 @users_bp.route('/profile')
 @login_required
 def profile():
     return render_template("profile.html", user=current_user)
 
 
-@users_bp.route("/register", methods=["GET", "POST"])
+@users_bp.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
 
@@ -30,6 +31,11 @@ def register():
     return render_template("register.html", form=form)
 
 
+@users_bp.route("/login", methods=["POST"])
+def login():
+    # Temporary stand-in so portal.html works
+    print("Login form data:", request.form)
+    return redirect(url_for("landing.landing"))
 
     # if request.method == "POST":
     #     name = request.form["name"]

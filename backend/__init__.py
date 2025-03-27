@@ -8,6 +8,7 @@ from backend.models.invitations_models import *
 from backend.routes.landing_routes import landing_bp
 from backend.routes.pets_routes import pets_bp
 from backend.routes.users_routes import users_bp
+from backend.routes.invitations_routes import invitations_bp
 
 
 def create_app():
@@ -29,5 +30,6 @@ def create_app():
     app.register_blueprint(landing_bp)
     app.register_blueprint(pets_bp)  # Register pet routes
     app.register_blueprint(users_bp)  # Register user routes
+    app.register_blueprint(invitations_bp) # Register invitation routes
 
     return app

@@ -8,7 +8,7 @@ from backend.utils.constants import RoleType
 pets_bp = Blueprint("pets", __name__)
 
 
-@pets_bp.route("/profile/<int:pets_id>")
+@pets_bp.route("/pets/<int:pets_id>")
 def pet_profile(pets_id):
     pet = get_pet_by_id(pets_id)
     if not pet:
@@ -16,7 +16,7 @@ def pet_profile(pets_id):
     return render_template("pet_profile.html", pet=pet)
 
 
-@pets_bp.route("/add", methods = ["GET", "POST"])
+@pets_bp.route("/pets/add", methods = ["GET", "POST"])
 def add_pet_profile():
     if request.method == "POST":
         pet_data = prepare_pet_data(request.form, current_user.id)
@@ -27,7 +27,7 @@ def add_pet_profile():
     return render_template('add_pet.html')
 
 
-@pets_bp.route("/profile/<int:pets_id>/update", methods=["PATCH"])
+@pets_bp.route("/pets/<int:pets_id>/update", methods=["PATCH"])
 def update_pet_data(pets_id):
 
     updated_pet = update_pet_profile(pets_id, current_user.id)
