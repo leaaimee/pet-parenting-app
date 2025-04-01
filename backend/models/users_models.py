@@ -1,8 +1,9 @@
 from backend.database import db
 from backend.utils.constants import RoleType, AccessLevel, InvitationStatus
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
 
-class Users(db.Model):
+class Users(db.Model, UserMixin):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key= True)
     name = db.Column(db.String(100), nullable=False)
@@ -21,13 +22,14 @@ class Users(db.Model):
     roles = db.relationship('Roles', back_populates='user', lazy=True)
     assigned_tasks = db.relationship('Tasks', backref='assigned_user', lazy=True)
     sitting_assignments = db.relationship('Sitters', back_populates='sitter')
+    pets = db.relationship("Pets", back_populates="parent")
 
 
 class Roles(db.Model):
     __tablename__ = "roles"
     id = db.Column(db.Integer, primary_key=True)
-    pet_id = db.Column(db.Integer, nullable=False)
-    user_id = db.Column(db.Integer, nullable=False)
+    pet_id = db.Column(db.Integer, db.ForeignKey('pets.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     role = db.Column(db.Enum(RoleType), nullable=False)
     access_level = db.Column(db.Enum(AccessLevel), nullable=False, default=AccessLevel.VIEW_ALL)
 
@@ -48,3 +50,5 @@ class Sitters(db.Model):
 
     pet = db.relationship('Pets', backref='sitter_assignments')
     sitter = db.relationship('Users', back_populates='sitting_assignments')
+
+

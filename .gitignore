@@ -1,9 +1,22 @@
 # created by virtualenv automatically
+
+
+# Ignore Python virtual environments
+.venv/
+.env/
+
+
+# Ignore environment variables or sensitive config files
 .env
+*.env
+
+# Ignore compiled files
+__pycache__/
+*.pyc
+
+
+# Keep essential files
 !.gitignore
 !README.md
 !*.py
 !*.txt
-
-SECRET_KEY = GPTtoldMeN0tToUSEp@ssword123
-DATABASE_URL=postgresql://postgres:WhiteRabbit_25@localhost:5432/pet_parenting

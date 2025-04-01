@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% set hide_nav = True %}
+
+{% block title %}Home{% endblock %}
+
+{% block header %}Welcome Back 🐾{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+  <a href="{{ url_for('pets.show_pets') }}" class="tile">
+    <span>🐾</span>
+    <h3>Pet Family</h3>
+  </a>
+  <a href="{{ url_for('pets.add_pet_profile') }}" class="tile">
+    <span>➕</span>
+    <h3>Add Pet</h3>
+  </a>
+  <a href="{{ url_for('users.user_profile') }}" class="tile">
+    <span>👤</span>
+    <h3>My Profile</h3>
+  </a>
+
+  <a href="{{ url_for('users.edit_user_profile') }}" class="tile">
+    <span>✏</span>
+    <h3>Edit Profile</h3>
+  </a>
+
+
+
+
+  <a href="{{ url_for('invitations.view_invitations') }}" class="tile">
+    <span>📨</span>
+    <h3>Invites</h3>
+  </a>
+</div>
+{% endblock %}

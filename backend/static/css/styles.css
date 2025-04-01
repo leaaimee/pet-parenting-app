@@ -1,0 +1,332 @@
+body {
+  /* background-color: #d8e7d1; sage */
+ /* background-color: #d2c5ea !important;  /* 💜 Lavender */
+  background-color: #9cabbc !important; /* 💜 light mint */
+  color: #222 !important;
+  font-family: 'Inter', 'Manrope', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  color-scheme: only light;
+
+}
+
+header {
+  text-align: center;
+  padding: 2rem 1rem;
+  background-color: #9487ad !important;  /* Soft lavender/plum */
+  /* background-color: #94b48b !important;  /* Soft lavender/plum */
+  color: #fff !important;
+
+  border-bottom: 2px solid #3d3549;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 2rem;
+  letter-spacing: 1px;
+  font-family: 'Oswald', 'Roboto Condensed', sans-serif;
+}
+
+
+h2, h3 {
+  font-family: 'Oswald', 'Roboto Condensed', sans-serif;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 1.5rem;
+}
+
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/*  home area  */
+.dashboard {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  margin-top: 2rem;
+}
+
+.tile {
+  /* background: #5a4e70;  dark lavender */
+  /* background: #8391a3; greenish */
+  background: #768596;  /*  darker */
+  border: 1px solid #444;
+  border-radius: 12px;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #fff;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-decoration: none;
+}
+
+.tile:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  text-decoration: none;
+}
+
+.tile span {
+  font-size: 2.2rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.tile h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+
+/*  profile tiles  */
+.profile {
+  /* background-color: #827599 !important; lavender */
+  background-color: #8391a3 !important;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-top: 2rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.profile h2 {
+  color: #fff;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+}
+
+.profile p {
+  font-size: 1rem;
+  color: #ccc;
+  margin-bottom: 0.8rem;
+}
+
+.profile img {
+  max-width: 160px;
+  border-radius: 50%;
+  margin-bottom: 1.5rem;
+  border: 2px solid #444;
+}
+
+/*  Navigation area */
+.nav {
+  display: flex;
+  gap: 1.5rem;
+  background-color: ;
+  padding: 1rem 2rem;
+  justify-content: center;
+}
+
+.nav a {
+  background-color: #f3edff !important;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  color: #5a4e70 !important; /* Lavender accent */
+  transition: background 0.3s ease;
+  text-decoration: none;
+}
+
+.nav a:hover {
+  background-color: #3d3549;
+  color: #fff;
+  text-decoration: none;
+}
+
+
+form {
+  margin: 2rem auto 0;
+  max-width: 600px;
+}
+
+/* 🌿 Labels */
+form label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+  color: #3d3549;
+}
+
+/* 🌘 Inputs, Dropdowns, Textareas */
+form input,
+form select,
+form textarea {
+  width: 100%;
+  padding: 0.6rem;
+  /* background: #3d3549;  dark violet */
+  background: #8391a3;  dark sage */
+  /* border: 1px solid #444; */
+  color: #eee;
+  border-radius: 6px;
+  margin-bottom: 1.2rem;
+  transition: all 0.2s ease;
+}
+
+/* 🐾 Hover & Focus States */
+form input:hover,
+form select:hover,
+form textarea:hover,
+form input:focus,
+form select:focus,
+form textarea:focus {
+  /*  border-color: #bfa2db; /* Lavender */
+  /*  background: #5a4e70; /*  dark purple  */
+  background: #93a0af;
+  outline: none;
+}
+
+/* 💜 Buttons */
+form button {
+  background-color: ##8391a3; /* Sage */
+  color: #111;
+  padding: 0.6rem 1.4rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+form button:hover {
+  background-color: #94b58b;
+}
+
+
+.form-check-label {
+  font-size: 1rem;
+  color: #3d3549; /* Match input text color */
+  margin-right: 1rem;
+  margin-left: 1rem;
+  margin-bottom: 2rem;
+  margin-top: 0.0rem;
+}
+
+.form-check-input {
+  transform: scale(1.4);
+  accent-color: #bfa2db; /* Optional: Lavender checkbox */
+  cursor: pointer;
+
+}
+
+
+
+/* ✨ Global Button (non-form) */
+.btn {
+  background-color: #c8bedd;  /* sage */
+  color: #5a4e70;
+  padding: 0.7rem 1.4rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #bbaed1;
+}
+
+
+
+.btn {
+  display: inline-block;
+  background-color: #f3edff;
+  color: #5a4e70;
+  padding: 0.7rem 1.4rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #3d3549;
+}
+
+/* Sage color scheme  */
+.btn-sage {
+  background-color: #a8c3a0;
+  color: #111;
+  padding: 0.6rem 1.4rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-sage:hover {
+  background-color: #94b58b;
+}
+
+
+
+
+
+
+.alert {
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.2rem;
+  font-weight: bold;
+}
+
+.alert-success { background: #225522; color: #ccffcc; }
+.alert-danger  { background: #551111; color: #ffcccc; }
+.alert-warning { background: #664400; color: #fff5cc; }
+
+/* 📎 Links */
+a {
+  color: #99ddff;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+
+.card {
+  background-color: #1b1b1b;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.05);
+}
+
+
+
+footer {
+  text-align: center;
+  padding: 2rem 1rem;
+  font-size: 0.9rem;
+  color: #888;
+  border-top: 1px solid #333;
+  margin-top: 3rem;
+}
+
+
+.tag {
+  display: inline-block;
+  padding: 0.3rem 0.7rem;
+  background: #333;
+  color: #ccc;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  margin-right: 0.3rem;
+  text-transform: uppercase;
+}
+
+

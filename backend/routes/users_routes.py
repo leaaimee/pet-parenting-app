@@ -1,16 +1,16 @@
-from flask import Blueprint, render_template, redirect, url_for, request
-from flask_login import login_required, current_user
-from backend.forms.user_form import RegistrationForm
+from flask import Blueprint, render_template, redirect, url_for, request, redirect
+from flask_login import login_required, current_user, login_url, login_user, logout_user
+from backend.forms.user_form import RegistrationForm, LoginForm
 from backend.models.users_models import Users, db
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 
 users_bp = Blueprint("users", __name__)
 
 
-@users_bp.route('/profile')
-@login_required
-def profile():
-    return render_template("profile.html", user=current_user)
+@users_bp.route('/user-profile')
+# @login_required
+def user_profile():
+    return render_template("user_profile.html", user=current_user)
 
 
 @users_bp.route('/register', methods=['GET', 'POST'])
@@ -24,27 +24,33 @@ def register():
             email=form.email.data,
             password_hash=hashed_password
         )
-        db.session.add()
+        db.session.add(new_user)
         db.session.commit()
-        return redirect(url_for('users.profile'))
+        login_user(new_user)
+        return redirect(url_for('landing.profile'))
 
-    return render_template("register.html", form=form)
+    return render_template("portal.html", register_form=form, login_form=LoginForm())
 
 
 @users_bp.route("/login", methods=["POST"])
 def login():
-    # Temporary stand-in so portal.html works
-    print("Login form data:", request.form)
-    return redirect(url_for("landing.landing"))
+    form = LoginForm()
 
-    # if request.method == "POST":
-    #     name = request.form["name"]
-    #     email = request.form["email"]
-    #     password = request.form["password"]
-    #
-    #     new_user = create_user_profile(name, email,password)
-    #
-    #     if new_user:
-    #         return redirect(url_for('users.profile'))
+    if form.validate_on_submit():
+        user = Users.query.filter_by(email=form.email.data).first()
+        if user and check_password_hash(user.password_hash, form.password.data):
+            login_user(user)
+            return redirect(url_for('landing.home'))  # Or whatever page comes next
+    return redirect(url_for('landing.portal'))
 
-    # return render_template('register.html')
+
+@users_bp.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for("landing.home"))
+
+
+@users_bp.route('/edit-profile', methods=['GET', 'POST'])
+# @login_required
+def edit_user_profile():
+    return "Edit Profile Page Coming Soon!"

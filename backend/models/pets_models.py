@@ -1,4 +1,6 @@
 from backend.database import db
+from backend.models.tasks_models import Tasks
+
 
 class Pets(db.Model):
     __tablename__ = "pets"
@@ -14,7 +16,7 @@ class Pets(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.now())
 
     parent_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    parent = db.relationship("User", back_populates="pets")
+    parent = db.relationship("Users", back_populates="pets")
 
     roles = db.relationship('Roles', back_populates='pet', lazy=True)
     pet_data = db.relationship('PetData', backref='pet', lazy=True)

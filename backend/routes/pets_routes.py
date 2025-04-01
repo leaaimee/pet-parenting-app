@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, abort
 from flask_login import current_user
+from backend.forms.pet_form import PetForm
 
 from backend.services.pets_service import get_pet_by_id, create_pet_profile, update_pet_profile, prepare_pet_data
 from backend.utils.constants import RoleType
@@ -18,13 +19,14 @@ def pet_profile(pets_id):
 
 @pets_bp.route("/pets/add", methods = ["GET", "POST"])
 def add_pet_profile():
+    form = PetForm()
     if request.method == "POST":
         pet_data = prepare_pet_data(request.form, current_user.id)
         new_pet = create_pet_profile(**pet_data)
 
-        return redirect(url_for('pets.pet_profile', pets_id=new_pet.id))
+        return redirect(url_for('pets.pet_profile', pet_id=new_pet.id))
 
-    return render_template('add_pet.html')
+    return render_template('add_pet.html', form=form)
 
 
 @pets_bp.route("/pets/<int:pets_id>/update", methods=["PATCH"])
@@ -41,8 +43,9 @@ def update_pet_data(pets_id):
 
 @pets_bp.route("/pet-family")
 def show_pets():
-    user_pets = [role.pet for role in current_user.roles if role.role == RoleType.OWNER]
-    friend_pets = [role.pet for role in current_user.roles if role.role != RoleType.OWNER]
+    return render_template("pet_family.html")
+    # user_pets = [role.pet for role in current_user.roles if role.role == RoleType.OWNER]
+    # friend_pets = [role.pet for role in current_user.roles if role.role != RoleType.OWNER]
 
     # NOTE: Consider refining the empty pet case handling later.
     # Possible improvements:
