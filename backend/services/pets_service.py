@@ -1,5 +1,5 @@
 from backend import Permissions
-from backend.models.pets_models import Pets
+from backend.models.pets_models import Pets, PetData
 from backend.database import db
 from datetime import date, datetime
 from flask import request
@@ -130,3 +130,31 @@ def update_pet_profile(pet_id, user_id):
         return None
 
 
+def create_pet_data(favorite_things, dislikes, preferred_treats, social_style, allergies, medical_alerts, diet, communication, behavior_notes, additional_info):
+    try:
+        pet_data = PetData (
+            favorite_things=favorite_things,
+            dislikes=dislikes,
+            social_style=social_style,
+            communication=communication,
+            preferred_treats=preferred_treats,
+            diet=diet,
+            allergies=allergies,
+            medical_alerts=medical_alerts,
+            behavior_notes=behavior_notes,
+            additional_info=additional_info
+        )
+
+        db.session.add(pet_data)
+        db.session.commit()
+
+        return pet_data
+
+
+    except SQLAlchemyError:
+        db.session.rollback()
+        return None  # TODO: Improve error handling later
+
+    except Exception:
+        db.session.rollback()
+        return None

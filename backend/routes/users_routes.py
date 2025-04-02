@@ -10,7 +10,7 @@ users_bp = Blueprint("users", __name__)
 @users_bp.route('/user-profile')
 # @login_required
 def user_profile():
-    return render_template("user_profile.html", user=current_user)
+    return render_template("show_user_profile.html", user=current_user)
 
 
 @users_bp.route('/register', methods=['GET', 'POST'])

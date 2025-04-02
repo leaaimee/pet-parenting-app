@@ -29,28 +29,108 @@ class PetData(db.Model):
     __tablename__ = "pet_data"
     id = db.Column(db.Integer, primary_key=True)
     pet_id = db.Column(db.Integer, db.ForeignKey("pets.id"), nullable=False)
-    allergies = db.Column(db.Text, nullable=False, default="")
+    favorite_things = db.Column(db.Text, nullable=False, default="")
+    dislikes = db.Column(db.Text, nullable=False, default="")
+    social_style = db.Column(db.Text, nullable=False, default="")
+    communication = db.Column(db.Text, nullable=False, default="")
+    preferred_treats = db.Column(db.Text, nullable=False, default="")
     diet = db.Column(db.Text, nullable=False, default="")
+    allergies = db.Column(db.Text, nullable=False, default="")
+    medical_alerts = db.Column(db.Text, nullable=False, default="")
     behavior_notes = db.Column(db.Text, nullable=False, default="")
     additional_info = db.Column(db.Text, nullable=False, default="")
 
 
-class MedicalRecord(db.Model):
-    __tablename__ = "medical_record"
+# class MedicalRecord(db.Model):
+#     __tablename__ = "medical_record"
+#     id = db.Column(db.Integer, primary_key=True)
+#     pet_id = db.Column(db.Integer, db.ForeignKey("pets.id"), nullable=False)
+#     weight = db.Column(db.String(20), nullable=True, default="")
+#     weight_updated = db.Column(db.String(20), nullable=True)
+#     record_type = db.Column(db.String(100))
+#     description = db.Column(db.Text)
+#     date = db.Column(db.DateTime)
+#     vet_name = db.Column(db.String(100))
+#     next_due_date = db.Column(db.DateTime)
+#     test_results = db.Column(db.Text)
+#     medication = db.Column(db.Text)
+#     documents = db.Column(db.String(300))
+
+
+class MedicalProfile(db.Model):
+    __tablename__ = "medical_profiles"
     id = db.Column(db.Integer, primary_key=True)
     pet_id = db.Column(db.Integer, db.ForeignKey("pets.id"), nullable=False)
-    record_type = db.Column(db.String(100))  # Type of record (Vaccination, Checkup, etc.)
-    description = db.Column(db.Text) # Detailed notes on diagnosis or procedure
-    date = db.Column(db.DateTime) # date of record
+    blood_type = db.Column(db.String(10))
+    weight = db.Column(db.String(20), nullable=True, default="")
+    weight_updated = db.Column(db.String(20), nullable=True)
+    chronic_conditions = db.Column(db.Text)
+    notes = db.Column(db.Text)
+
+    vaccinations = db.relationship("VaccinationRecord", back_populates="medical_profile", lazy=True)
+    medications = db.relationship("Medication", back_populates="medical_profile", lazy=True)
+    test_results = db.relationship("TestResult", back_populates="medical_profile", lazy=True)
+    vet_visits = db.relationship("VetVisit", back_populates="medical_profile", lazy=True)
+    medical_documents = db.relationship("MedicalDocument", back_populates="medical_profile", lazy=True)
+
+
+class VaccinationRecord(db.Model):
+    __tablename__ = "vaccination_records"
+    id = db.Column(db.Integer, primary_key=True)
+    pet_id = db.Column(db.Integer, db.ForeignKey("pets.id"), nullable=False)
+    medical_profile_id = db.Column(db.Integer, db.ForeignKey("medical_profiles.id"), nullable=False)
+    medical_profile = db.relationship("MedicalProfile", back_populates="vaccinations")
+    vaccine_name = db.Column(db.String(100), nullable=False)
+    dose_number = db.Column(db.Integer, nullable=True)
+    batch_number = db.Column(db.String(50), nullable=True)
+    previous_vaccination_date = db.Column(db.Date, nullable=True)
+    next_vaccination_date = db.Column(db.String(50), nullable=True)
+    additional_Info = db.Column(db.Text, nullable=True)
+
+
+class Medication(db.Model):
+    __tablename__ = "medications"
+    id = db.Column(db.Integer, primary_key=True)
+    pet_id = db.Column(db.Integer, db.ForeignKey("pets.id"), nullable=False)
+    medical_profile_id = db.Column(db.Integer, db.ForeignKey("medical_profiles.id"), nullable=False)
+    medical_profile = db.relationship("MedicalProfile", back_populates="medications")
+    name = db.Column(db.String(100), nullable=False)
+    dosage = db.Column(db.String(100))
+    duration = db.Column(db.String(100))
+    additional_Info = db.Column(db.Text)
+
+
+class TestResult(db.Model):
+    __tablename__ = "test_results"
+    id = db.Column(db.Integer, primary_key=True)
+    pet_id = db.Column(db.Integer, db.ForeignKey("pets.id"), nullable=False)
+    medical_profile_id = db.Column(db.Integer, db.ForeignKey("medical_profiles.id"), nullable=False)
+    medical_profile = db.relationship("MedicalProfile", back_populates="test_results")
+    test_type = db.Column(db.String(100))
+    result = db.Column(db.Text)
+    date = db.Column(db.Date)
+    additional_Info = db.Column(db.Text)
+
+
+class VetVisit(db.Model):
+    __tablename__ = "vet_visits"
+    id = db.Column(db.Integer, primary_key=True)
+    pet_id = db.Column(db.Integer, db.ForeignKey("pets.id"), nullable=False)
+    medical_profile_id = db.Column(db.Integer, db.ForeignKey("medical_profiles.id"), nullable=False)
+    medical_profile = db.relationship("MedicalProfile", back_populates="vet_visits")
+    reason = db.Column(db.String(200))
     vet_name = db.Column(db.String(100))
-    next_due_date = db.Column(db.DateTime) # scheduled follow-ups
-    test_results = db.Column(db.Text) #  lab notes - not sure if this is obsolete with documents
-    medication = db.Column(db.Text) # Prescription details
-    documents = db.Column(db.String(300)) # Stores link to PDF/image of lab results, prescriptions, etc
+    clinic_info = db.Column(db.Text)
+    date = db.Column(db.Date)
+    documents = db.Column(db.String(300))
 
 
-class MedicalDocuments(db.Model):
+class MedicalDocument(db.Model):
     __tablename__ = "medical_documents"
     id = db.Column(db.Integer, primary_key=True)
     pet_id = db.Column(db.Integer, db.ForeignKey("pets.id"), nullable=False)
-    file_path = db.Column(db.String(300), nullable=False)
+    medical_profile_id = db.Column(db.Integer, db.ForeignKey("medical_profiles.id"), nullable=False)
+    medical_profile = db.relationship("MedicalProfile", back_populates="medical_documents")
+    file_path = db.Column(db.String(300))
+    description = db.Column(db.Text)
+    uploaded_at = db.Column(db.DateTime, default=db.func.now())
