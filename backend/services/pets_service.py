@@ -44,7 +44,7 @@ def pet_birthday(birth_year, birth_month, birth_day):
     return None, None, None
 
 
-def prepare_pet_data(form, parent_id):
+def prepare_pet_profile(form, parent_id):
     """ Extracts and processes pet form data for storage """
     name = form.get["name"].strip()
     species = form["species"].strip()
@@ -130,8 +130,13 @@ def update_pet_profile(pet_id, user_id):
         return None
 
 
-def create_pet_data(favorite_things, dislikes, preferred_treats, social_style, allergies, medical_alerts, diet, communication, behavior_notes, additional_info):
+def create_pet_data(favorite_things, dislikes, preferred_treats, social_style, allergies, medical_alerts, diet, communication, behavior_notes, additional_info, pet_id, user_id):
     try:
+
+        pet = Pets.query.get(pet_id)
+        if not pet or pet.parent_id != user_id:
+            return None
+
         pet_data = PetData (
             favorite_things=favorite_things,
             dislikes=dislikes,
@@ -158,3 +163,40 @@ def create_pet_data(favorite_things, dislikes, preferred_treats, social_style, a
     except Exception:
         db.session.rollback()
         return None
+
+
+def edit_pet_data(pet_id, user_id):
+    try:
+
+        pet_data = PetData.query.filter_by(pet_id=pet_id).first()
+        pet = Pets.query.get(pet_id)
+
+        if not pet_data or not pet:
+            return None
+
+        if pet.parent_id != user_id and not user_has_access(user_id, pet_id, Permissions.EDIT_PET_INFO):
+            return None
+
+
+        pet_data.favorite_things = request.form.get("favorite_things", pet_data.favorite_things)
+        pet_data.dislikes = request.form.get("dislikes", pet_data.dislikes)
+        pet_data.social_style = request.form.get("social_style", pet_data.social_style)
+        pet_data.communication = request.form.get("communication", pet_data.communication)
+        pet_data.preferred_treats = request.form.get("preferred_treats", pet_data.preferred_treats)
+        pet_data.diet = request.form.get("diet", pet_data.diet)
+        pet_data.allergies = request.form.get("allergies", pet_data.allergies)
+        pet_data.medical_alerts = request.form.get("medical_alerts", pet_data.medical_alerts)
+        pet_data.behavior_notes = request.form.get("behavior_notes", pet_data.behavior_notes)
+        pet_data.additional_info = request.form.get("additional_info", pet_data.additional_info)
+
+        db.session.commit()
+        return pet_data
+
+    except SQLAlchemyError:
+        db.session.rollback()
+        return None
+
+    except Exception:
+        db.session.rollback()
+        return None
+

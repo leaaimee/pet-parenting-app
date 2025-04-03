@@ -12,7 +12,7 @@ def landing():
         return redirect(url_for("landing.home"))
 
     return render_template(
-        "portal.html",
+        "landing.html",
         login_form=LoginForm(),
         register_form=RegistrationForm(),
         portal_view=True

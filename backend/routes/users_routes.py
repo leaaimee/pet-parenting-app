@@ -29,7 +29,7 @@ def register():
         login_user(new_user)
         return redirect(url_for('landing.profile'))
 
-    return render_template("portal.html", register_form=form, login_form=LoginForm())
+    return render_template("landing.html", register_form=form, login_form=LoginForm())
 
 
 @users_bp.route("/login", methods=["POST"])

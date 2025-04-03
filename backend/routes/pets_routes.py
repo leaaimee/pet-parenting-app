@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, abort
 from flask_login import current_user
 from backend.forms.pet_form import PetForm, PetDataForm
-from backend.models.pets_models import Pets, db
+from backend.models.pets_models import Pets, PetData, db
 from backend.services.pets_service import create_pet_data
 
-from backend.services.pets_service import get_pet_by_id, create_pet_profile, update_pet_profile, prepare_pet_data
+from backend.services.pets_service import get_pet_by_id, create_pet_profile, update_pet_profile, prepare_pet_profile
 from backend.utils.constants import RoleType
 
 
@@ -23,7 +23,7 @@ def pet_profile(pets_id):
 def add_pet_profile():
     form = PetForm()
     if request.method == "POST":
-        pet_data = prepare_pet_data(request.form, current_user.id)
+        pet_data = prepare_pet_profile(request.form, current_user.id)
         new_pet = create_pet_profile(**pet_data)
 
         return redirect(url_for('pets.pet_profile', pet_id=new_pet.id))
@@ -50,10 +50,30 @@ def edit_pet_profile(pet_id):
 def add_pet_data(pet_id):
     form = PetDataForm()
     if request.method == "POST" and form.validate_on_submit():
-        data = prepare_pet_data(form, pet_id)
+        data = prepare_pet_profile(form, pet_id)
         create_pet_data(**data)
         return redirect(url_for('pets.pet_profile', pet_id=pet_id))
     return render_template("add_pet_data.html", form=form, pet_it=pet_id)
+
+
+@pets_bp.route("/pets/<int:pet_id>/data/edit", methods=["GET", "POST"])
+def edit_pet_data(pet_id):
+
+    pet = Pets.query.get_or_404(pet_id)
+    pet_data = PetData.query.filter_by(pet_id=pet_id).first()
+
+    if not pet_data:
+        pet_data = PetData(pet_id=pet_id)
+        db.session.add(pet_data)
+
+    form = PetDataForm(obj=pet_data)
+
+    if form.validate_on_submit():
+        form.populate_obj(pet_data)
+        db.session.commit()
+        return redirect(url_for("pets.pet_profile", pet_id=pet.id))
+
+    return render_template("edit_pet_data.html", form=form, pet_id=pet_id)
 
 
 # 🔜 TODO: Display vaccination history in pet profile page

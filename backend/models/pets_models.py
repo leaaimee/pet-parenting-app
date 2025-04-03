@@ -20,7 +20,7 @@ class Pets(db.Model):
 
     roles = db.relationship('Roles', back_populates='pet', lazy=True)
     pet_data = db.relationship('PetData', backref='pet', lazy=True)
-    medical_records = db.relationship('MedicalRecord', backref='pet', lazy=True)
+    medical_profile = db.relationship("MedicalProfile", back_populates="pet", lazy=True)
     tasks = db.relationship('Tasks', backref='pet', lazy=True)
     sitters = db.relationship('Sitters', back_populates='pet', lazy=True)
 
@@ -67,7 +67,8 @@ class MedicalProfile(db.Model):
     chronic_conditions = db.Column(db.Text)
     notes = db.Column(db.Text)
 
-    vaccinations = db.relationship("VaccinationRecord", back_populates="medical_profile", lazy=True)
+    pet = db.relationship("Pets", back_populates="medical_profile", lazy=True)
+    vaccination_records = db.relationship("VaccinationRecord", back_populates="medical_profile", lazy=True)
     medications = db.relationship("Medication", back_populates="medical_profile", lazy=True)
     test_results = db.relationship("TestResult", back_populates="medical_profile", lazy=True)
     vet_visits = db.relationship("VetVisit", back_populates="medical_profile", lazy=True)
@@ -79,7 +80,6 @@ class VaccinationRecord(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     pet_id = db.Column(db.Integer, db.ForeignKey("pets.id"), nullable=False)
     medical_profile_id = db.Column(db.Integer, db.ForeignKey("medical_profiles.id"), nullable=False)
-    medical_profile = db.relationship("MedicalProfile", back_populates="vaccinations")
     vaccine_name = db.Column(db.String(100), nullable=False)
     dose_number = db.Column(db.Integer, nullable=True)
     batch_number = db.Column(db.String(50), nullable=True)
@@ -87,17 +87,21 @@ class VaccinationRecord(db.Model):
     next_vaccination_date = db.Column(db.String(50), nullable=True)
     additional_Info = db.Column(db.Text, nullable=True)
 
+    medical_profile = db.relationship("MedicalProfile", back_populates="vaccination_records")
+
 
 class Medication(db.Model):
     __tablename__ = "medications"
     id = db.Column(db.Integer, primary_key=True)
     pet_id = db.Column(db.Integer, db.ForeignKey("pets.id"), nullable=False)
     medical_profile_id = db.Column(db.Integer, db.ForeignKey("medical_profiles.id"), nullable=False)
-    medical_profile = db.relationship("MedicalProfile", back_populates="medications")
     name = db.Column(db.String(100), nullable=False)
     dosage = db.Column(db.String(100))
     duration = db.Column(db.String(100))
     additional_Info = db.Column(db.Text)
+
+    medical_profile = db.relationship("MedicalProfile", back_populates="medications")
+
 
 
 class TestResult(db.Model):
@@ -105,11 +109,12 @@ class TestResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     pet_id = db.Column(db.Integer, db.ForeignKey("pets.id"), nullable=False)
     medical_profile_id = db.Column(db.Integer, db.ForeignKey("medical_profiles.id"), nullable=False)
-    medical_profile = db.relationship("MedicalProfile", back_populates="test_results")
     test_type = db.Column(db.String(100))
     result = db.Column(db.Text)
     date = db.Column(db.Date)
     additional_Info = db.Column(db.Text)
+
+    medical_profile = db.relationship("MedicalProfile", back_populates="test_results")
 
 
 class VetVisit(db.Model):
@@ -117,12 +122,13 @@ class VetVisit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     pet_id = db.Column(db.Integer, db.ForeignKey("pets.id"), nullable=False)
     medical_profile_id = db.Column(db.Integer, db.ForeignKey("medical_profiles.id"), nullable=False)
-    medical_profile = db.relationship("MedicalProfile", back_populates="vet_visits")
     reason = db.Column(db.String(200))
     vet_name = db.Column(db.String(100))
     clinic_info = db.Column(db.Text)
     date = db.Column(db.Date)
     documents = db.Column(db.String(300))
+
+    medical_profile = db.relationship("MedicalProfile", back_populates="vet_visits")
 
 
 class MedicalDocument(db.Model):
@@ -130,7 +136,8 @@ class MedicalDocument(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     pet_id = db.Column(db.Integer, db.ForeignKey("pets.id"), nullable=False)
     medical_profile_id = db.Column(db.Integer, db.ForeignKey("medical_profiles.id"), nullable=False)
-    medical_profile = db.relationship("MedicalProfile", back_populates="medical_documents")
     file_path = db.Column(db.String(300))
     description = db.Column(db.Text)
     uploaded_at = db.Column(db.DateTime, default=db.func.now())
+
+    medical_profile = db.relationship("MedicalProfile", back_populates="medical_documents")

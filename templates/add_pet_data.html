@@ -1,10 +1,72 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-</body>
-</html>
+{%block title %}Pet Family{% endblock %}
+
+{% block header %}Pet Data{% endblock %}
+
+{% block content %}
+<h2>Pet Data</h2>
+
+
+<form method="POST" action="{{ url_for('pets.add_pet_data', pet_id=pet_id) }}">
+    {{ form.hidden_tag() }}
+
+    <div>
+        {{ form.favorite_things.label }}
+        {{ form.favorite_things }}
+    </div>
+
+    <div>
+        {{ form.dislikes.label }}
+        {{ form.dislikes }}
+    </div>
+
+    <div>
+        {{ form.social_style.label }}
+        {{ form.social_style }}
+    </div>
+
+    <div>
+        {{ form.communication.label }}
+        {{ form.communication }}
+    </div>
+
+    <div>
+        {{ form.preferred_treats.label }}
+        {{ form.preferred_treats }}
+    </div>
+
+    <div>
+        {{ form.diet.label }}
+        {{ form.diet }}
+    </div>
+
+    <div>
+        {{ form.allergies.label }}
+        {{ form.allergies }}
+    </div>
+
+    <div>
+        {{ form.medical_alerts.label }}
+        {{ form.medical_alerts }}
+    </div>
+
+    <div>
+        {{ form.behavior_notes.label }}
+        {{ form.behavior_notes }}
+    </div>
+
+    <div>
+        {{ form.additional_info.label }}
+        {{ form.additional_info }}
+    </div>
+
+
+    <div style="text-align: center;">
+        {{ form.submit(class="btn", value="Submit Pet Data") }}
+    </div>
+
+</form>
+{% endblock %}
+
+
