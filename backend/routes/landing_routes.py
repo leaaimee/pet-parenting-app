@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for
 from backend.forms.user_form import RegistrationForm, LoginForm
-from flask_login import current_user
+from flask_login import current_user, login_required
 
 
 
@@ -19,5 +19,11 @@ def landing():
     )
 
 @landing_bp.route("/home")
+@login_required
 def home():
+    print("Current user:", current_user)
+    print("Authenticated?", current_user.is_authenticated)
     return render_template("home.html")
+
+
+

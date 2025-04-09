@@ -27,12 +27,47 @@
   {% endif %}
 
 
+
+
+  {% if user.pronouns %}
+    <p><strong>Pronouns:</strong> {{ user.pronouns }}</p>
+  {% endif %}
+
+  {% if user.phone %}
+  <p><strong>Phone:</strong> {{ user.phone }}</p>
+  {% endif %}
+
+  {% if user.location %}
+    <p><strong>Location:</strong> {{ user.location }}</p>
+  {% endif %}
+
+  {% if user.birth_date %}
+    <p><strong>Birth Date:</strong> {{ user.birth_date.strftime('%B %d, %Y') }}</p>
+  {% endif %}
+
+  {% if user.languages_spoken %}
+    <p><strong>Languages spoken:</strong> {{ user.languages_spoken }}</p>
+  {% endif %}
+
+  {% if user.certifications %}
+    <p><strong>Certifications:</strong> {{ user.certifications }}</p>
+  {% endif %}
+
+  {% if user.experience_with %}
+    <p><strong>Experience with:</strong> {{ user.experience_with }}</p>
+  {% endif %}
+
+
+
   <a href="{{ url_for('users.edit_user_profile') }}" class="btn btn-outline-secondary mt-3">Edit Profile</a>
 
 
 
+{% if user.created_at %}
   <p><strong>Member since:</strong> {{ user.created_at.strftime('%B %d, %Y') }}</p>
-
+{% else %}
+  <p><strong>Member since:</strong> unknown</p>
+{% endif %}
   </div>
 </div>
 {% endblock %}

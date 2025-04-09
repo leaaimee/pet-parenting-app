@@ -25,6 +25,7 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+    app.config["SESSION_COOKIE_SECURE"] = False
 
 
     # Initialize the database and migrations
@@ -33,7 +34,7 @@ def create_app():
 
 
     login_manager.init_app(app)
-    login_manager.login_view = "landing.home"
+    login_manager.login_view = "landing.landing"
 
     @login_manager.user_loader
     def load_user(user_id):

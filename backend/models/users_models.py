@@ -7,11 +7,21 @@ class Users(db.Model, UserMixin):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key= True)
     name = db.Column(db.String(100), nullable=False)
+    pronouns = db.Column(db.String(50))
     email = db.Column(db.String(100), nullable=False, unique=True)
     password_hash = db.Column(db.String(200), nullable=False)
     profile_picture = db.Column(db.String(300))
     profile_description = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=db.func.now())
+    phone = db.Column(db.String(20), nullable=True)
+    location = db.Column(db.String(100))
+    birth_date = db.Column(db.Date)
+    languages_spoken = db.Column(db.String(100))
+    experience_with = db.Column(db.Text)
+    certifications = db.Column(db.Text)
+    certification_files = db.Column(db.String(300))
+
+
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -21,7 +31,7 @@ class Users(db.Model, UserMixin):
 
     roles = db.relationship('Roles', back_populates='user', lazy=True)
     assigned_tasks = db.relationship('Tasks', backref='assigned_user', lazy=True)
-    sitting_assignments = db.relationship('Sitters', back_populates='sitter')
+    sitting_assignments = db.relationship('Sitters', back_populates='sitter', overlaps="sitters")
     pets = db.relationship("Pets", back_populates="parent")
 
 

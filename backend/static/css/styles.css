@@ -154,6 +154,13 @@ form label {
   color: #3d3549;
 }
 
+form h2 {
+  text-align: center;
+  color: #3d3549;
+  margin-bottom: 2rem;
+}
+
+
 /* 🌘 Inputs, Dropdowns, Textareas */
 form input,
 form select,
@@ -184,7 +191,7 @@ form textarea:focus {
 
 /* 💜 Buttons */
 form button {
-  background-color: ##8391a3; /* Sage */
+  background-color: #8391a3; /* Sage */
   color: #111;
   padding: 0.6rem 1.4rem;
   border: none;
@@ -196,6 +203,25 @@ form button {
 
 form button:hover {
   background-color: #94b58b;
+}
+
+
+.button-secondary {
+  display: inline-block;
+  background-color: transparent;
+  color: #3d3549;
+  border: 2px solid #3d3549;
+  padding: 0.6rem 1.4rem;
+  border-radius: 6px;
+  font-weight: bold;
+  text-decoration: none;
+  margin-top: 1rem;
+  transition: all 0.3s ease;
+}
+
+.button-secondary:hover {
+  background-color: #3d3549;
+  color: #eee;
 }
 
 

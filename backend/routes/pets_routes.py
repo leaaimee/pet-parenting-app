@@ -56,7 +56,7 @@ def add_pet_data(pet_id):
     return render_template("add_pet_data.html", form=form, pet_it=pet_id)
 
 
-@pets_bp.route("/pets/<int:pet_id>/data/edit", methods=["GET", "POST"])
+@pets_bp.route("/pets/<int:pet_id>/data/add", methods=["GET", "POST"])
 def edit_pet_data(pet_id):
 
     pet = Pets.query.get_or_404(pet_id)
@@ -92,3 +92,8 @@ def show_pets():
     # 3️⃣ A more elegant logic for guiding first-time users
 
     # return render_template("pet_family.html", user_pets=user_pets, friend_pets=friend_pets)
+
+
+@pets_bp.route("/pets/<int:pet_id>/medical_data", methods=["GET", "POST"])
+def medical_data(pet_id):
+    pass

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{%block title %}Pet Family{% endblock %}
+
+{% block header %}Edit Pet Data{% endblock %}
+
+{% block content %}
+<h2>Edit Pet Data</h2>
+
+
+<form method="POST" action="{{ url_for('pets.add_pet_data', pet_id=pet_id) }}">
+    {{ form.hidden_tag() }}
+
+    <div>
+        {{ form.favorite_things.label }}
+        {{ form.favorite_things }}
+    </div>
+
+
+</form>
+{% endblock %}
+
+
