@@ -1,10 +1,108 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-</body>
-</html>
+{% block title %}{{ pet.name }}'s Profile{% endblock %}
+{% block header %}Pet Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card p-4 shadow-lg rounded">
+
+    <h2 class="mb-3">{{ pet.name }}</h2>
+
+    {% if pet.profile_picture %}
+      <img src="{{ pet.profile_picture }}" alt="{{ pet.name }}'s Picture" class="img-fluid rounded mb-3" style="max-width: 200px;">
+    {% else %}
+      <p><em>No profile picture provided.</em></p>
+    {% endif %}
+
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+
+  <div class="p-4 rounded-xl border shadow">
+    <h4 class="font-semibold">Species</h4>
+    <p>{{ pet.species or '—' }}</p>
+  </div>
+
+  <div class="p-4 rounded-xl border shadow">
+    <h4 class="font-semibold">Subspecies</h4>
+    <p>{{ pet.subspecies or '—' }}</p>
+  </div>
+
+  <div class="p-4 rounded-xl border shadow">
+    <h4 class="font-semibold">Gender</h4>
+    <p>{{ pet.gender or '—' }}</p>
+  </div>
+
+  {% if pet.birthday %}
+    <div class="p-4 rounded-xl border shadow">
+      <h4 class="font-semibold">Birthday</h4>
+      <p>{{ pet.birthday }}</p>
+    </div>
+  {% else %}
+    <div class="p-4 rounded-xl border shadow">
+      <h4 class="font-semibold">Birth Month</h4>
+      <p>{{ pet.birth_month or '—' }}</p>
+    </div>
+    <div class="p-4 rounded-xl border shadow">
+      <h4 class="font-semibold">Birth Year</h4>
+      <p>{{ pet.birth_year or '—' }}</p>
+    </div>
+  {% endif %}
+
+</div>
+    {% if pet.profile_description  %}
+      <div class="mt-3">
+        <strong>About {{ pet.name }}:</strong>
+        <p>{{ pet.profile_description  }}</p>
+      </div>
+    {% endif %}
+
+{% if pet_data %}
+  <div class="card mt-4 p-3 shadow-sm">
+    <h5 class="mb-3">Behavioral & Lifestyle Info</h5>
+
+    {% if pet_data.favorite_things %}
+      <p><strong>❤️ Favorite Things:</strong> {{ pet_data.favorite_things }}</p>
+    {% endif %}
+    {% if pet_data.dislikes %}
+      <p><strong>🚫 Dislikes:</strong> {{ pet_data.dislikes }}</p>
+    {% endif %}
+    {% if pet_data.social_style %}
+      <p><strong>🤝 Social Style:</strong> {{ pet_data.social_style }}</p>
+    {% endif %}
+    {% if pet_data.communication %}
+      <p><strong>🗣️ Communication:</strong> {{ pet_data.communication }}</p>
+    {% endif %}
+    {% if pet_data.preferred_treats %}
+      <p><strong>🍬 Preferred Treats:</strong> {{ pet_data.preferred_treats }}</p>
+    {% endif %}
+    {% if pet_data.diet %}
+      <p><strong>🥗 Diet:</strong> {{ pet_data.diet }}</p>
+    {% endif %}
+    {% if pet_data.allergies %}
+      <p><strong>⚠️ Allergies:</strong> {{ pet_data.allergies }}</p>
+    {% endif %}
+    {% if pet_data.medical_alerts %}
+      <p><strong>🧪 Medical Alerts:</strong> {{ pet_data.medical_alerts }}</p>
+    {% endif %}
+    {% if pet_data.behavior_notes %}
+      <p><strong>🧠 Behavior Notes:</strong> {{ pet_data.behavior_notes }}</p>
+    {% endif %}
+    {% if pet_data.additional_info %}
+      <p><strong>📎 Additional Info:</strong> {{ pet_data.additional_info }}</p>
+    {% endif %}
+  </div>
+
+    {% else %}
+      <p class="text-muted">No pet data added yet.</p>
+    {% endif %}
+
+    <div class="mt-4">
+      <a href="{{ url_for('pets.edit_pet_profile', pet_id=pet.id) }}" class="btn btn-outline-primary">Edit Profile</a>
+      <a href="{{ url_for('pets.edit_pet_data', pet_id=pet.id) }}" class="btn btn-outline-secondary">Edit Data</a>
+      <a href="{{ url_for('pets.medical_data', pet_id=pet.id) }}" class="btn btn-outline-danger">Medical Profile</a>
+      <a href="{{ url_for('pets.show_pets') }}" class="btn btn">Back to Pet Family</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

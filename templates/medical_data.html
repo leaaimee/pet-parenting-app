@@ -1,23 +1,107 @@
 {% extends 'base.html' %}
 
-{%block title %}Pet Family{% endblock %}
+{% block title %}Medical Profile{% endblock %}
 
-{% block header %}Edit Pet Data{% endblock %}
+{% block header %}Medical Data for {{ pet.name }}{% endblock %}
 
 {% block content %}
-<h2>Edit Pet Data</h2>
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Medical Overview</h3>
+    <a href="{{ url_for('pets.edit_medical_data', pet_id=pet.id) }}" class="btn btn-outline-secondary">✏️ Edit Medical Data</a>
+  </div>
 
-
-<form method="POST" action="{{ url_for('pets.add_pet_data', pet_id=pet_id) }}">
-    {{ form.hidden_tag() }}
-
-    <div>
-        {{ form.favorite_things.label }}
-        {{ form.favorite_things }}
+  {% if medical_profile %}
+    <div class="card mb-3">
+      <div class="card-body">
+        <p><strong>Blood Type:</strong> {{ medical_profile.blood_type or '—' }}</p>
+        <p><strong>Weight:</strong> {{ medical_profile.weight or '—' }}</p>
+        <p><strong>Last Weighed:</strong> {{ medical_profile.weight_updated or '—' }}</p>
+        <p><strong>Chronic Conditions:</strong><br> {{ medical_profile.chronic_conditions or '—' }}</p>
+        <p><strong>Notes:</strong><br> {{ medical_profile.notes or '—' }}</p>
+      </div>
     </div>
+  {% else %}
+    <p class="text-muted">No medical data available yet for {{ pet.name }}.</p>
+    <a href="{{ url_for('pets.edit_medical_data', pet_id=pet.id) }}" class="btn btn-primary">Add Medical Data</a>
+  {% endif %}
+<a href="{{ url_for('pets.pet_profile', pet_id=pet.id) }}" class="btn btn-outline-primary">Back to Pet Profile</a>
+
+</div>
 
 
-</form>
+
+<h5 class="mt-4">🧬 Vaccination Records</h5>
+{% if medical_profile.vaccination_records %}
+  {% for record in medical_profile.vaccination_records %}
+    <div class="card mb-2">
+      <div class="card-body">
+        <p><strong>Vaccine:</strong> {{ record.vaccine_name or '—' }}</p>
+        <p><strong>Dose #:</strong> {{ record.dose_number or '—' }}</p>
+        <p><strong>Batch:</strong> {{ record.batch_number or '—' }}</p>
+        <p><strong>Previous:</strong> {{ record.previous_vaccination_date or '—' }}</p>
+        <p><strong>Next:</strong> {{ record.next_vaccination_date or '—' }}</p>
+        <p><strong>Notes:</strong> {{ record.additional_Info or '—' }}</p>
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <p class="text-muted">No vaccination records found.</p>
+{% endif %}
+
+
+
+
+
+<h5 class="mt-4">💊 Medications</h5>
+{% if medical_profile.medications %}
+  {% for med in medical_profile.medications %}
+    <div class="card mb-2">
+      <div class="card-body">
+        <p><strong>Name:</strong> {{ med.name or '—' }}</p>
+        <p><strong>Dosage:</strong> {{ med.dosage or '—' }}</p>
+        <p><strong>Duration:</strong> {{ med.duration or '—' }}</p>
+        <p><strong>Notes:</strong> {{ med.additional_Info or '—' }}</p>
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <p class="text-muted">No medication records found.</p>
+{% endif %}
+
+
+<h5 class="mt-4">🧪 Test Results</h5>
+{% if medical_profile.test_results %}
+  {% for test in medical_profile.test_results %}
+    <div class="card mb-2">
+      <div class="card-body">
+        <p><strong>Type:</strong> {{ test.test_type or '—' }}</p>
+        <p><strong>Result:</strong> {{ test.result or '—' }}</p>
+        <p><strong>Date:</strong> {{ test.date or '—' }}</p>
+        <p><strong>Notes:</strong> {{ test.additional_Info or '—' }}</p>
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <p class="text-muted">No test results found.</p>
+{% endif %}
+
+
+<h5 class="mt-4">📎 Medical Documents</h5>
+{% if medical_profile.medical_documents %}
+  {% for doc in medical_profile.medical_documents %}
+    <div class="card mb-2">
+      <div class="card-body">
+        <p><strong>File:</strong> {{ doc.file_path or '—' }}</p>
+        <p><strong>Description:</strong> {{ doc.description or '—' }}</p>
+        <p><strong>Uploaded:</strong> {{ doc.uploaded_at or '—' }}</p>
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <p class="text-muted">No documents uploaded yet.</p>
+{% endif %}
+
+
+
 {% endblock %}
-
-

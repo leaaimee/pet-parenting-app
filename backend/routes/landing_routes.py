@@ -23,7 +23,7 @@ def landing():
 def home():
     print("Current user:", current_user)
     print("Authenticated?", current_user.is_authenticated)
-    return render_template("home.html")
+    return render_template("home.html", user=current_user)
 
 
 

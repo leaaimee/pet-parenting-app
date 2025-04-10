@@ -11,6 +11,7 @@ class Pets(db.Model):
     birth_month = db.Column(db.Integer, nullable=True)
     species = db.Column(db.String(100), nullable=False)
     subspecies = db.Column(db.String(100), nullable=True)
+    gender = db.Column(db.String(20), nullable=True)
     profile_picture = db.Column(db.String(300), nullable=False, default="")
     profile_description = db.Column(db.Text, nullable=False, default="")
     created_at = db.Column(db.DateTime, default=db.func.now())
@@ -29,6 +30,8 @@ class PetData(db.Model):
     __tablename__ = "pet_data"
     id = db.Column(db.Integer, primary_key=True)
     pet_id = db.Column(db.Integer, db.ForeignKey("pets.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+
     favorite_things = db.Column(db.Text, nullable=False, default="")
     dislikes = db.Column(db.Text, nullable=False, default="")
     social_style = db.Column(db.Text, nullable=False, default="")
@@ -39,6 +42,8 @@ class PetData(db.Model):
     medical_alerts = db.Column(db.Text, nullable=False, default="")
     behavior_notes = db.Column(db.Text, nullable=False, default="")
     additional_info = db.Column(db.Text, nullable=False, default="")
+
+    user = db.relationship("Users", backref="pet_data")
 
 
 # class MedicalRecord(db.Model):

@@ -2,10 +2,10 @@ from werkzeug.security import generate_password_hash
 from backend.database import db
 from backend.models.users_models import Users
 
-def create_user_profile_data(name, email, password):
+def create_user_profile_data(form):
     """ user creation & password hashing """
     try:
-        hashed_password = generate_password_hash(password)
+        hashed_password = generate_password_hash(form.password.data)
 
         new_user = Users(
             name=form.name.data,

@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Medical Profile{% endblock %}
+
+{% block header %}Medical Data for Your Pet{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h3 class="mb-3">Update Medical Profile</h3>
+
+  <form method="POST" action="{{ url_for('pets.edit_medical_data', pet_id=pet_id) }}">
+    {{ form.hidden_tag() }}
+
+    <div class="mb-3">
+      {{ form.blood_type.label(class="form-label") }}
+      {{ form.blood_type(class="form-control") }}
+    </div>
+
+    <div class="mb-3">
+      {{ form.weight.label(class="form-label") }}
+      {{ form.weight(class="form-control") }}
+    </div>
+
+    <div class="mb-3">
+      {{ form.weight_updated.label(class="form-label") }}
+      {{ form.weight_updated(class="form-control") }}
+    </div>
+
+    <div class="mb-3">
+      {{ form.chronic_conditions.label(class="form-label") }}
+      {{ form.chronic_conditions(class="form-control", rows=3) }}
+    </div>
+
+    <div class="mb-3">
+      {{ form.notes.label(class="form-label") }}
+      {{ form.notes(class="form-control", rows=3) }}
+    </div>
+
+    <div class="text-center">
+      {{ form.submit(class="btn btn-success", value="Save Medical Profile") }}
+    </div>
+  </form>
+</div>
+
+<hr>
+<h4 class="mt-4">Add Vaccination</h4>
+<button class="btn btn-outline-info mb-3" type="button" onclick="toggleForm('vaccine-form')">+ Add Vaccine</button>
+
+<div id="vaccine-form" style="display: none;">
+  <form method="POST" action="#">
+    {{ vaccine_form.hidden_tag() }}
+
+    <div class="mb-3">
+      {{ vaccine_form.vaccine_name.label(class="form-label") }}
+      {{ vaccine_form.vaccine_name(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ vaccine_form.dose_number.label(class="form-label") }}
+      {{ vaccine_form.dose_number(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ vaccine_form.batch_number.label(class="form-label") }}
+      {{ vaccine_form.batch_number(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ vaccine_form.previous_vaccination_date.label(class="form-label") }}
+      {{ vaccine_form.previous_vaccination_date(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ vaccine_form.next_vaccination_date.label(class="form-label") }}
+      {{ vaccine_form.next_vaccination_date(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ vaccine_form.additional_Info.label(class="form-label") }}
+      {{ vaccine_form.additional_Info(class="form-control", rows=2) }}
+    </div>
+    <div class="text-center">
+      {{ vaccine_form.submit(class="btn btn-success") }}
+    </div>
+  </form>
+</div>
+
+<script>
+  function toggleForm(id) {
+    const form = document.getElementById(id);
+    form.style.display = (form.style.display === "none") ? "block" : "none";
+  }
+</script>
+
+
+
+
+
+<script>
+  function toggleForm(formId, buttonId) {
+    const form = document.getElementById(formId);
+    const button = document.getElementById(buttonId);
+
+    if (form.style.display === "none") {
+      form.style.display = "block";
+      button.innerText = "✖️ Hide Form";
+    } else {
+      form.style.display = "none";
+      button.innerText = "➕ Add Vaccine";
+    }
+  }
+</script>
+
+
+
+{% endblock %}
+

@@ -50,13 +50,18 @@
     </div>
 
     <div>
+      {{ form.gender.label }}
+      {{ form.gender }}
+    </div>
+
+    <div>
         {{ form.profile_picture.label }}
         {{ form.profile_picture }}
     </div>
 
     <div>
-        {{ form.description.label }}
-        {{ form.description }}
+        {{ form.profile_description .label }}
+        {{ form.profile_description }}
     </div>
 
     <div style="text-align: center;">

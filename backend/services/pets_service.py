@@ -1,5 +1,5 @@
-from backend import Permissions
-from backend.models.pets_models import Pets, PetData
+from backend import Permissions, db
+from backend.models.pets_models import Pets, PetData, MedicalProfile
 from backend.database import db
 from datetime import date, datetime
 from flask import request
@@ -20,41 +20,34 @@ def pet_birthday(birth_year, birth_month, birth_day):
     try:
         current_year = datetime.now().year
 
-        birth_year = int(birth_year) if birth_year and birth_year.isdigit() and 1900 <= int(birth_year) <= current_year else None
-        birth_month = int(birth_month) if birth_month and birth_month.isdigit() and 1 <= int(birth_month) <= 12 else None
-        birth_day = int(birth_day) if birth_day and birth_day.isdigit() else None
-
-        if birth_year is not None and birth_month is not None and birth_day is not None:
-            try:
-                return date(birth_year, birth_month, birth_day), None, None
-            except ValueError:
-                return None, None, None
-
-        if birth_year is not None and birth_month is not None:
-            return None, birth_year, birth_month
-
-        if birth_year is not None:
+        if isinstance(birth_year, int) and 1900 <= birth_year <= current_year:
+            if isinstance(birth_month, int) and 1 <= birth_month <= 12:
+                if isinstance(birth_day, int):
+                    try:
+                        return date(birth_year, birth_month, birth_day), None, None
+                    except ValueError:
+                        return None, None, None
+                return None, birth_year, birth_month
             return None, birth_year, None
-
-
-    except Exception as e:
-        print(f"Unexpected error in pet_birthday: {e}")
         return None, None, None
 
-    return None, None, None
+    except Exception as e:
+        print("Unexpected error in pet_birthday:", e)
+        return None, None, None
 
 
 def prepare_pet_profile(form, parent_id):
     """ Extracts and processes pet form data for storage """
-    name = form.get["name"].strip()
-    species = form["species"].strip()
-    subspecies = form.get("subspecies", None)
-    description = form.get("profile_description", None)
-    profile_picture = form.get("profile_picture", None)
+    name = form.name.data.strip()
+    species = form.species.data.strip()
+    subspecies = form.subspecies.data or None
+    gender = form.gender.data or None
+    profile_description = form.profile_description.data or None
+    profile_picture = form.profile_picture.data or None
 
-    birth_day = int(form.get("birth_day")) if form.get("birth_day", "").isdigit() else None
-    birth_month = int(form.get("birth_month")) if form.get("birth_month", "").isdigit() else None
-    birth_year = int(form.get("birth_year")) if form.get("birth_year", "").isdigit() else None
+    birth_day = form.birthday.data.day if form.birthday.data else None
+    birth_month = int(form.birth_month.data) if form.birth_month.data else None
+    birth_year = int(form.birth_year.data) if form.birth_year.data else None
 
     birthday, birth_year, birth_month = pet_birthday(birth_year, birth_month, birth_day)
 
@@ -62,26 +55,28 @@ def prepare_pet_profile(form, parent_id):
         "name": name,
         "species": species,
         "subspecies": subspecies,
+        "gender": gender,
         "birthday": birthday,
         "birth_year": birth_year,
         "birth_month": birth_month,
-        "description": description,
+        "description": profile_description,
         "profile_picture": profile_picture,
         "parent_id": parent_id
     }
 
 
-def create_pet_profile(name, species, subspecies, birth_year, birth_month, birthday, description, profile_picture, parent_id):
+def create_pet_profile(name, species, subspecies, gender, birth_year, birth_month, birthday, description, profile_picture, parent_id):
     """ Create new pet profile """
     try:
         new_pet = Pets(
             name=name,
             species=species,
             subspecies=subspecies,
+            gender=gender,
             birthday=birthday,
             birth_year=birth_year,
             birth_month=birth_month,
-            description=description,
+            profile_description=description,
             profile_picture=profile_picture,
             parent_id=parent_id
         )
@@ -92,12 +87,14 @@ def create_pet_profile(name, species, subspecies, birth_year, birth_month, birth
         return new_pet
 
 
-    except SQLAlchemyError:
+    except SQLAlchemyError as e:
         db.session.rollback()
-        return None  # TODO: Improve error handling later
+        print("❌ SQLAlchemyError during pet creation:", e)
+        return None
 
-    except Exception:
+    except Exception as e:
         db.session.rollback()
+        print("❌ General Exception during pet creation:", e)
         return None
 
 
@@ -130,6 +127,26 @@ def update_pet_profile(pet_id, user_id):
         return None
 
 
+
+def prepare_pet_data(form, pet_id, user_id):
+    """ Extracts and processes pet additional data for storage """
+    return {
+        "favorite_things": form.favorite_things.data or None,
+        "dislikes": form.dislikes.data or None,
+        "preferred_treats": form.preferred_treats.data or None,
+        "social_style": form.social_style.data or None,
+        "allergies": form.allergies.data or None,
+        "medical_alerts": form.medical_alerts.data or None,
+        "diet": form.diet.data or None,
+        "communication": form.communication.data or None,
+        "behavior_notes": form.behavior_notes.data or None,
+        "additional_info": form.additional_info.data or None,
+        "pet_id": pet_id,
+        "user_id": user_id
+    }
+
+
+
 def create_pet_data(favorite_things, dislikes, preferred_treats, social_style, allergies, medical_alerts, diet, communication, behavior_notes, additional_info, pet_id, user_id):
     try:
 
@@ -147,7 +164,9 @@ def create_pet_data(favorite_things, dislikes, preferred_treats, social_style, a
             allergies=allergies,
             medical_alerts=medical_alerts,
             behavior_notes=behavior_notes,
-            additional_info=additional_info
+            additional_info=additional_info,
+            pet_id = pet_id,
+            user_id = user_id
         )
 
         db.session.add(pet_data)
@@ -200,3 +219,29 @@ def edit_pet_data(pet_id, user_id):
         db.session.rollback()
         return None
 
+
+
+
+def prepare_medical_profile_data(form, pet_id):
+    return {
+        "pet_id": pet_id,
+        "blood_type": form.blood_type.data or None,
+        "weight": form.weight.data or None,
+        "weight_updated": form.weight_updated.data or None,
+        "chronic_conditions": form.chronic_conditions.data or None,
+        "notes": form.notes.data or None,
+    }
+
+
+def edit_medical_profile(**data):
+    existing_profile = MedicalProfile.query.filter_by(pet_id=data["pet_id"]).first()
+
+    if existing_profile:
+        for key, value in data.items():
+            setattr(existing_profile, key, value)
+    else:
+        existing_profile = MedicalProfile(**data)
+        db.session.add(existing_profile)
+
+    db.session.commit()
+    return existing_profile

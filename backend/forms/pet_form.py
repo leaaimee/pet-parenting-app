@@ -26,8 +26,9 @@ class PetForm(FlaskForm):
 
     species = StringField("Species", validators=[Optional(), Length(min=2, max=100)])
     subspecies = StringField("Subspecies", validators=[Optional(), Length(min=2, max=100)])
+    gender = StringField("Gender", validators=[Optional(), Length(max=20)])
     profile_picture = StringField("Profile Picture", validators=[Optional()])
-    description = TextAreaField("Description", validators=[Optional()])
+    profile_description = TextAreaField("Description", validators=[Optional()])
     submit = SubmitField("Add Pet")
 
 
@@ -41,7 +42,7 @@ class PetDataForm(FlaskForm):
     allergies = TextAreaField("Allergies", validators=[Optional()])
     medical_alerts = TextAreaField("Medical Alerts", validators=[Optional()])
     behavior_notes = TextAreaField("Behaviour Notes", validators=[Optional()])
-    additional_info = TextAreaField("Additional Info", validators=[Optional()])
+    additional_info = TextAreaField("Additional_info", validators=[Optional()])
     submit = SubmitField("Add Pet Data")
 
 
@@ -50,8 +51,8 @@ class MedicalProfileForm(FlaskForm):
     weight = StringField("Weight", validators=[Optional()])
     weight_updated = StringField("Last Weighed On", validators=[Optional()])
     chronic_conditions = TextAreaField("Chronic Conditions", validators=[Optional()])
-    additional_Info = TextAreaField("Additional Info", validators=[Optional()])
-    submit = SubmitField("Add Data")
+    notes = TextAreaField("Notes", validators=[Optional()])
+    submit = SubmitField("Save Medical Profile")
 
 
 class VaccinationRecord(FlaskForm):

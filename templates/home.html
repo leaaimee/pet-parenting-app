@@ -3,7 +3,11 @@
 
 {% block title %}Home{% endblock %}
 
-{% block header %}Welcome Back 🐾{% endblock %}
+{% block header %}
+{% if user.is_authenticated %}
+  <p>Welcome Back {{ user.name }} 🐾</p>
+{% endif %}
+{% endblock %}
 
 {% block content %}
 <div class="dashboard">
@@ -20,17 +24,27 @@
     <h3>My Profile</h3>
   </a>
 
-  <a href="{{ url_for('users.edit_user_profile') }}" class="tile">
-    <span>✏</span>
-    <h3>Edit Profile</h3>
-  </a>
-
-
-
-
   <a href="{{ url_for('invitations.view_invitations') }}" class="tile">
     <span>📨</span>
     <h3>Invites</h3>
   </a>
+
+  <a href="{{ url_for('users.logout') }}" class="tile">
+    <span>🚪</span>
+    <h3>Logout</h3>
+  </a>
+
+
+
+
+<!--  <a href="{{ url_for('users.edit_user_profile') }}" class="tile">-->
+<!--    <span>✏</span>-->
+<!--    <h3>Edit Profile</h3>-->
+<!--  </a>-->
+
+
+
+
+
 </div>
 {% endblock %}

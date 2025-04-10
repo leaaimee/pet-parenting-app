@@ -22,7 +22,7 @@ def create_user_profile():
 
         if new_user:
             login_user(new_user)
-            return redirect(url_for('users.show_user_profile'))  # Or wherever you want
+            return redirect(url_for('users.show_user_profile', user_id=new_user.id))
 
     return render_template("landing.html", register_form=form, login_form=LoginForm())
 
@@ -55,18 +55,18 @@ def edit_user_profile():
     if form.validate_on_submit():
         edit_user_profile_data(current_user, form)
 
-        return redirect(url_for('users.show_user_profile', user_id=current_user.id))
+        return redirect(url_for('users.show_user_profile', user=current_user))
 
-    return render_template("edit_user_profile.html", form=form, user=current_user.id)
+    return render_template("edit_user_profile.html", form=form, user=current_user)
 
 
-@users_bp.route('/profile/<int:user_id>')
+@users_bp.route('/profile/', methods=['GET'])
 @login_required
-def show_user_profile(user_id):
-    user = get_user_profile(user_id)
+def show_user_profile():
+    user = get_user_profile(current_user.id)
     if not user:
         return "User not found", 404
-    return render_template("show_user_profile.html", user=current_user.id)
+    return render_template("show_user_profile.html", user=user)
 
 
 
