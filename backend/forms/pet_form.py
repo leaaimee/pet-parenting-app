@@ -3,6 +3,7 @@ from wsgiref.validate import validator
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, DateField, TextAreaField, IntegerField, SelectField
 from wtforms.validators import DataRequired, Length, Optional, NumberRange
+from flask_wtf.file import FileField, FileAllowed
 
 from datetime import datetime
 current_year = datetime.now().year
@@ -27,7 +28,10 @@ class PetForm(FlaskForm):
     species = StringField("Species", validators=[Optional(), Length(min=2, max=100)])
     subspecies = StringField("Subspecies", validators=[Optional(), Length(min=2, max=100)])
     gender = StringField("Gender", validators=[Optional(), Length(max=20)])
-    profile_picture = StringField("Profile Picture", validators=[Optional()])
+
+    profile_picture = FileField("Upload Pet Profile Image", validators=[
+    FileAllowed(['jpg', 'jpeg', 'png', 'gif'], 'Images only!')])
+
     profile_description = TextAreaField("Description", validators=[Optional()])
     submit = SubmitField("Add Pet")
 

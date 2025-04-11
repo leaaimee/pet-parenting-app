@@ -22,7 +22,6 @@ class Users(db.Model, UserMixin):
     certification_files = db.Column(db.String(300))
 
 
-
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 

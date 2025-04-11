@@ -2,8 +2,10 @@ from backend import Permissions, db
 from backend.models.pets_models import Pets, PetData, MedicalProfile
 from backend.database import db
 from datetime import date, datetime
-from flask import request
+from flask import request, current_app
 from sqlalchemy.exc import SQLAlchemyError
+from backend.utils.file_utils import save_file
+from backend.utils.upload_helper import get_upload_path
 
 from backend.utils.permissions import user_has_access
 
@@ -43,7 +45,9 @@ def prepare_pet_profile(form, parent_id):
     subspecies = form.subspecies.data or None
     gender = form.gender.data or None
     profile_description = form.profile_description.data or None
-    profile_picture = form.profile_picture.data or None
+
+    file = form.profile_picture.data
+    profile_picture = save_file(file, get_upload_path("pet")) if file else ""
 
     birth_day = form.birthday.data.day if form.birthday.data else None
     birth_month = int(form.birth_month.data) if form.birth_month.data else None
@@ -65,7 +69,7 @@ def prepare_pet_profile(form, parent_id):
     }
 
 
-def create_pet_profile(name, species, subspecies, gender, birth_year, birth_month, birthday, description, profile_picture, parent_id):
+def add_pet_profile_data(name, species, subspecies, gender, birth_year, birth_month, birthday, description, profile_picture, parent_id):
     """ Create new pet profile """
     try:
         new_pet = Pets(
@@ -98,7 +102,7 @@ def create_pet_profile(name, species, subspecies, gender, birth_year, birth_mont
         return None
 
 
-def update_pet_profile(pet_id, user_id):
+def edit_pet_profile_data(pet_id, user_id):
     try:
         pet = Pets.query.get(pet_id)
         if not pet:
@@ -110,8 +114,13 @@ def update_pet_profile(pet_id, user_id):
         pet.name = request.form.get("name", pet.name)
         pet.species = request.form.get("species", pet.species)
         pet.subspecies = request.form.get("subspecies", pet.subspecies)
-        pet.description = request.form.get("description", pet.description)
-        pet.profile_picture = request.form.get("profile_picture", pet.profile_picture)
+        pet.profile_description = request.form.get("description", pet.profile_description)
+
+        file = request.files.get("profile_picture")
+        if file:
+            filename = save_file(file, current_app.config["UPLOAD_FOLDER"])
+            if filename:
+                pet.profile_picture = filename
 
         birth_day = request.form.get("birth_day", "").strip() or None
         birth_month = request.form.get("birth_month", "").strip() or None
@@ -147,7 +156,7 @@ def prepare_pet_data(form, pet_id, user_id):
 
 
 
-def create_pet_data(favorite_things, dislikes, preferred_treats, social_style, allergies, medical_alerts, diet, communication, behavior_notes, additional_info, pet_id, user_id):
+def add_pet_data_data(favorite_things, dislikes, preferred_treats, social_style, allergies, medical_alerts, diet, communication, behavior_notes, additional_info, pet_id, user_id):
     try:
 
         pet = Pets.query.get(pet_id)
@@ -184,7 +193,7 @@ def create_pet_data(favorite_things, dislikes, preferred_treats, social_style, a
         return None
 
 
-def edit_pet_data(pet_id, user_id):
+def edit_pet_data_data(pet_id, user_id):
     try:
 
         pet_data = PetData.query.filter_by(pet_id=pet_id).first()
@@ -245,3 +254,9 @@ def edit_medical_profile(**data):
 
     db.session.commit()
     return existing_profile
+
+
+def handle_pet_image_upload(file):
+    if file:
+        return save_file(file, current_app.config['UPLOAD_FOLDER'])
+    return ""

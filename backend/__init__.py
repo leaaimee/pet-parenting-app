@@ -13,26 +13,34 @@ from backend.routes.users_routes import users_bp
 from backend.routes.invitations_routes import invitations_bp
 from backend.models.users_models import Users
 
-login_manager = LoginManager()
 
+
+
+# 🛠️ Flask app factory
 def create_app():
     app = Flask(__name__, template_folder="../templates")
 
     load_dotenv()
 
-
-    # Configuration for the app
+    # 🔐 Config
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
     app.config["SESSION_COOKIE_SECURE"] = False
 
+    # 📦 File upload config
+    base_upload = os.path.join(os.getcwd(), 'backend', 'uploads')
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
+    app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}
+    app.config['PET_IMAGE_UPLOAD_FOLDER'] = os.path.join(base_upload, 'pet_images')
+    app.config['USER_IMAGE_UPLOAD_FOLDER'] = os.path.join(base_upload, 'user_images')
+    app.config['DATA_UPLOAD_FOLDER'] = os.path.join(base_upload, 'data')
 
-    # Initialize the database and migrations
+    # 🔌 Init extensions
     db.init_app(app)
     Migrate(app, db)
 
-
+    login_manager = LoginManager()
     login_manager.init_app(app)
     login_manager.login_view = "landing.landing"
 
@@ -40,11 +48,10 @@ def create_app():
     def load_user(user_id):
         return Users.query.get(int(user_id))
 
-
-    # Register the blueprint for routes
+    # 🌐 Register routes
     app.register_blueprint(landing_bp)
-    app.register_blueprint(pets_bp)  # Register pet routes
-    app.register_blueprint(users_bp)  # Register user routes
-    app.register_blueprint(invitations_bp) # Register invitation routes
+    app.register_blueprint(pets_bp)
+    app.register_blueprint(users_bp)
+    app.register_blueprint(invitations_bp)
 
     return app

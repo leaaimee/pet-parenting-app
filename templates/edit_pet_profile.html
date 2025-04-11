@@ -8,7 +8,7 @@
 <h2>Edit Pet Profile</h2>
 
 
-<form method="POST" action="{{ url_for('pets.add_pet_profile') }}">
+<form method="POST" action="{{ url_for('pets.edit_pet_profile', pet_id=pet.id) }}" enctype="multipart/form-data">
     {{ form.hidden_tag() }}
 
     <div>

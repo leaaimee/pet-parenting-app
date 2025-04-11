@@ -14,8 +14,8 @@ def user_profile():
     return render_template("show_user_profile.html", user=current_user)
 
 
-@users_bp.route('/create_user_profile', methods=['GET', 'POST'])
-def create_user_profile():
+@users_bp.route('/add_user_profile', methods=['GET', 'POST'])
+def add_user_profile():
     form = RegistrationForm()
     if form.validate_on_submit():
         new_user = create_user_profile_data(form)
