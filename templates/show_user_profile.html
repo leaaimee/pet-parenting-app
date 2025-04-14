@@ -12,7 +12,10 @@
   <h2 class="mb-4">Welcome, {{ user.name }}!</h2>
 
   {% if user.profile_picture %}
-    <img src="{{ user.profile_picture }}" alt="Profile Picture" class="img-fluid rounded mb-3" style="max-width: 200px;">
+    <img src="{{ url_for('users.user_image', filename=user.profile_picture) }}"
+       alt="{{ user.name }}'s Picture"
+       class="img-fluid rounded mb-3"
+       style="max-width: 200px;">
   {% else %}
     <p><em>No profile picture uploaded</em></p>
   {% endif %}

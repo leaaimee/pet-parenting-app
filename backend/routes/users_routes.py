@@ -1,10 +1,10 @@
-from flask import Blueprint, render_template, redirect, url_for, request, redirect, url_for
+from flask import Blueprint, render_template, redirect, url_for, request, redirect, url_for, send_from_directory
 from flask_login import login_required, current_user, login_url, login_user, logout_user
 from backend.forms.user_form import RegistrationForm, LoginForm, EditUserProfileForm
 from backend.models.users_models import Users, db
 from werkzeug.security import generate_password_hash, check_password_hash
 from backend.services.users_service import get_user_profile, edit_user_profile_data, create_user_profile_data
-
+from backend.utils.upload_helper import get_upload_path
 users_bp = Blueprint("users", __name__)
 
 
@@ -50,7 +50,7 @@ def logout():
 @users_bp.route('/edit-profile', methods=['GET', 'POST'])
 @login_required
 def edit_user_profile():
-    form = EditUserProfileForm()
+    form = EditUserProfileForm(obj=current_user)
 
     if form.validate_on_submit():
         edit_user_profile_data(current_user, form)
@@ -58,6 +58,11 @@ def edit_user_profile():
         return redirect(url_for('users.show_user_profile', user=current_user))
 
     return render_template("edit_user_profile.html", form=form, user=current_user)
+
+
+@users_bp.route('/media/user/<filename>')
+def user_image(filename):
+    return send_from_directory(get_upload_path("user"), filename)
 
 
 @users_bp.route('/profile/', methods=['GET'])

@@ -2,6 +2,8 @@ from werkzeug.security import generate_password_hash
 from backend.database import db
 from backend.models.users_models import Users
 from backend.utils.upload_helper import get_upload_path
+from flask import request
+from backend.utils.file_utils import save_file
 
 def create_user_profile_data(form):
     """ user creation & password hashing """
@@ -31,11 +33,17 @@ def edit_user_profile_data(user, form):
         user.location = form.location.data
         user.birth_date = form.birth_date.data
         user.pronouns = form.pronouns.data
+        user.profile_description = form.profile_description.data
         user.languages_spoken = form.languages_spoken.data
         user.experience_with = form.experience_with.data
         user.certifications = form.certifications.data
 
-        print("📦 Data being saved:", user.phone, user.location)
+        file = request.files.get("profile_picture")
+        if file:
+            filename = save_file(file, get_upload_path("user"))
+            if filename:
+                user.profile_picture = filename
+
         db.session.commit()
         return user
     except Exception as e:

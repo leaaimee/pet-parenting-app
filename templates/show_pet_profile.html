@@ -10,7 +10,10 @@
     <h2 class="mb-3">{{ pet.name }}</h2>
 
     {% if pet.profile_picture %}
-      <img src="{{ pet.profile_picture }}" alt="{{ pet.name }}'s Picture" class="img-fluid rounded mb-3" style="max-width: 200px;">
+      <img src="{{ url_for('pets.pet_image', filename=pet.profile_picture) }}"
+     alt="{{ pet.name }}'s Picture"
+     class="img-fluid rounded mb-3"
+     style="max-width: 200px;">
     {% else %}
       <p><em>No profile picture provided.</em></p>
     {% endif %}

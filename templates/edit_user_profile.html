@@ -8,7 +8,7 @@
 <h2>Edit Your Profile</h2>
 
 
-<form method="POST">
+<form method="POST" action="{{ url_for('users.edit_user_profile') }}" enctype="multipart/form-data">
   {{ form.hidden_tag() }}
 
   <div>
@@ -29,6 +29,17 @@
   <div>
     {{ form.pronouns.label }}
     {{ form.pronouns }}
+  </div>
+
+  <div>
+    {{ form.profile_description.label }}
+    {{ form.profile_description }}
+  </div>
+
+
+  <div>
+    {{ form.profile_picture.label }}
+    {{ form.profile_picture }}
   </div>
 
   <div>

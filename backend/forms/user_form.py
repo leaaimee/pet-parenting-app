@@ -21,6 +21,12 @@ class EditUserProfileForm(FlaskForm):
     location = StringField("Location", validators=[Optional()])
     birth_date = DateField("Birth Date", format="%Y-%m-%d", validators=[Optional()])
     pronouns = StringField("Pronouns", validators=[Optional()])
+    profile_description = TextAreaField("About Me", validators=[Optional()])
+
+    profile_picture = FileField("Upload User Profile Image", validators=[
+        FileAllowed(['jpg', 'jpeg', 'png', 'gif'], 'Images only!')
+    ])
+
     languages_spoken = StringField("Languages Spoken", validators=[Optional()])
     experience_with = TextAreaField("Experience With", validators=[Optional()])
     certifications = TextAreaField("Certifications", validators=[Optional()])

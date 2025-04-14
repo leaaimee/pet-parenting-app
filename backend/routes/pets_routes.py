@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, abort
+from flask import Blueprint, render_template, request, redirect, url_for, abort, send_from_directory
 from flask_login import current_user, login_required
 from backend.forms.pet_form import PetForm, PetDataForm, MedicalProfileForm
 from backend.models.pets_models import Pets, PetData, MedicalProfile, db
@@ -6,6 +6,7 @@ from backend.services.pets_service import add_pet_data_data, edit_pet_data_data,
 
 from backend.services.pets_service import get_pet_by_id, add_pet_profile_data, edit_pet_profile_data, prepare_pet_profile, prepare_pet_data
 from backend.utils.constants import RoleType
+from backend.utils.upload_helper import get_upload_path
 
 
 pets_bp = Blueprint("pets", __name__)
@@ -56,6 +57,11 @@ def edit_pet_profile(pet_id):
         return redirect(url_for("pets.pet_profile", pet_id=pet.id))
 
     return render_template("edit_pet_profile.html", form=form, pet=pet)
+
+
+@pets_bp.route('/media/pet/<filename>')
+def pet_image(filename):
+    return send_from_directory(get_upload_path("pet"), filename)
 
 
 @pets_bp.route("/pets/<int:pet_id>/data/add", methods=["GET", "POST"])

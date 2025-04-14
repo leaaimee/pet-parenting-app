@@ -6,6 +6,7 @@ from flask import request, current_app
 from sqlalchemy.exc import SQLAlchemyError
 from backend.utils.file_utils import save_file
 from backend.utils.upload_helper import get_upload_path
+import os
 
 from backend.utils.permissions import user_has_access
 
@@ -118,7 +119,7 @@ def edit_pet_profile_data(pet_id, user_id):
 
         file = request.files.get("profile_picture")
         if file:
-            filename = save_file(file, current_app.config["UPLOAD_FOLDER"])
+            filename = save_file(file, get_upload_path("pet"))
             if filename:
                 pet.profile_picture = filename
 
