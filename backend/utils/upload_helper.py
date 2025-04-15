@@ -8,5 +8,5 @@ def get_upload_path(category):
     return {
         "pet": os.path.join(base, 'pet_images'),
         "user": os.path.join(base, 'user_images'),
-        "data": os.path.join(base, 'data'),
+        "medical": os.path.join(base, 'medical'),
     }.get(category, base)

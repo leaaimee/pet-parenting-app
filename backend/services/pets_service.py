@@ -1,5 +1,5 @@
 from backend import Permissions, db
-from backend.models.pets_models import Pets, PetData, MedicalProfile
+from backend.models.pets_models import Pets, PetData, MedicalProfile, Medication, VaccinationRecord, TestResult, VetVisit, MedicalDocument
 from backend.database import db
 from datetime import date, datetime
 from flask import request, current_app
@@ -261,3 +261,109 @@ def handle_pet_image_upload(file):
     if file:
         return save_file(file, current_app.config['UPLOAD_FOLDER'])
     return ""
+
+
+# profile helper function
+def ensure_medical_profile(pet_id):
+    profile = MedicalProfile.query.filter_by(pet_id=pet_id).first()
+    if not profile:
+        print(f"❌ No medical profile found for pet {pet_id}")
+    return profile
+
+
+def edit_vaccination_data(pet_id, form):
+    profile = ensure_medical_profile(pet_id)
+    if not profile:
+        return None
+
+    vaccination_record = VaccinationRecord(
+        medical_profile_id=profile.id,
+        vaccine_name=form.vaccine_name.data,
+        dose_number=form.dose_number.data,
+        batch_number=form.batch_number.data,
+        previous_vaccination_date=form.previous_vaccination_date.data,
+        next_vaccination_date=form.next_vaccination_date.data,
+        additional_info=form.additional_info.data,
+    )
+
+    db.session.add(vaccination_record)
+    db.session.commit()
+    return vaccination_record
+
+
+def edit_medication_data(pet_id, form):
+    profile = ensure_medical_profile(pet_id)
+    if not profile:
+        return None
+
+    new_med = Medication(
+        medical_profile_id=profile.id,
+        name=form.name.data,
+        dosage=form.dosage.data,
+        duration=form.duration.data,
+        additional_info=form.additional_info.data,
+    )
+
+    db.session.add(new_med)
+    db.session.commit()
+    return new_med
+
+
+def edit_test_result_data(pet_id, form):
+    profile = ensure_medical_profile(pet_id)
+    if not profile:
+        return None
+
+    new_test_result = TestResult(
+        medical_profile_id=profile.id,
+        test_type=form.test_type.data,
+        result=form.result.data,
+        date=form.date.data,
+        additional_info=form.additional_info.data,
+    )
+
+    db.session.add(new_test_result)
+    db.session.commit()
+    return new_test_result
+
+
+def edit_vet_visit_data(pet_id, form):
+    profile = ensure_medical_profile(pet_id)
+    if not profile:
+        return None
+
+    file = request.files.get("document")
+    filename = save_file(file, get_upload_path("medical")) if file else ""
+
+    new_vet_visit = VetVisit(
+        medical_profile_id=profile.id,
+        reason=form.reason.data,
+        vet_name=form.vet_name.data,
+        clinic_info=form.clinic_info.data,
+        date=form.date.data,
+        documents=filename,
+    )
+
+    db.session.add(new_vet_visit)
+    db.session.commit()
+    return new_vet_visit
+
+
+def edit_medical_document_data(pet_id, form):
+    profile = ensure_medical_profile(pet_id)
+    if not profile:
+        return None
+
+    file = request.files.get("file")
+    filename = save_file(file, get_upload_path("medical")) if file else ""
+
+    new_medical_document = MedicalDocument(
+        medical_profile_id=profile.id,
+        file_path=filename,
+        description=form.description.data,
+        uploaded_at=form.uploaded_at.data,
+    )
+
+    db.session.add(new_medical_document)
+    db.session.commit()
+    return new_medical_document

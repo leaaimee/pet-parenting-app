@@ -59,13 +59,13 @@ class MedicalProfileForm(FlaskForm):
     submit = SubmitField("Save Medical Profile")
 
 
-class VaccinationRecord(FlaskForm):
+class VaccinationRecordForm(FlaskForm):
     vaccine_name = StringField("Vaccine Name", validators=[Optional()])
     dose_number = IntegerField("Dose Number", validators=[Optional(), NumberRange(min=1, max=10)])
     batch_number = StringField("Batch Number", validators=[Optional()])
-    previous_vaccination_date = DateField("Next Vaccination Date", validators=[Optional()])
+    previous_vaccination_date = DateField("Previous Vaccination Date", validators=[Optional()])
     next_vaccination_date = StringField("Next Vaccination Date", validators=[Optional()])
-    additional_Info = TextAreaField("Additional Info", validators=[Optional()])
+    additional_info = TextAreaField("Additional Info", validators=[Optional()])
     submit = SubmitField("Add Data")
 
 
@@ -73,7 +73,7 @@ class MedicationForm(FlaskForm):
     name = StringField("Name", validators=[Optional()])
     dosage = StringField("Dosage", validators=[Optional()])
     duration = StringField("Duration", validators=[Optional()])
-    additional_Info = TextAreaField("Additional Info", validators=[Optional()])
+    additional_info = TextAreaField("Additional Info", validators=[Optional()])
     submit = SubmitField("Add Data")
 
 
@@ -81,12 +81,23 @@ class TestResultsForm(FlaskForm):
     test_type = StringField("Test Type", validators=[Optional()])
     result = TextAreaField("Result", validators=[Optional()])
     date = DateField("Date", validators=[Optional()])
-    additional_Info = TextAreaField("Additional Info", validators=[Optional()])
+    additional_info = TextAreaField("Additional Info", validators=[Optional()])
+    submit = SubmitField("Add Data")
+
+
+class VetVisitForm(FlaskForm):
+    reason = StringField("Reason", validators=[Optional()])
+    vet_name = StringField("Vet Name", validators=[Optional()])
+    clinic_info = StringField("Clinic Info", validators=[Optional()])
+    date = DateField("Date", validators=[Optional()])
+    documents = FileField("Upload Visit Document", validators=[
+        FileAllowed(['pdf', 'png', 'jpg', 'jpeg'], 'PDF or Image only!')])
     submit = SubmitField("Add Data")
 
 
 class MedicalDocumentForm(FlaskForm):
-    file_path = StringField("File Path", validators=[Optional()])
+    file = FileField("Upload Document", validators=[
+        FileAllowed(['pdf', 'png', 'jpg', 'jpeg'], 'PDF or Image only!')])
     description = TextAreaField("Description", validators=[Optional()])
     uploaded_at = DateField("Uploaded At", validators=[Optional()])
     submit = SubmitField("Add Data")

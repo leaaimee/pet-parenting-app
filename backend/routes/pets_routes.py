@@ -2,11 +2,12 @@ from flask import Blueprint, render_template, request, redirect, url_for, abort,
 from flask_login import current_user, login_required
 from backend.forms.pet_form import PetForm, PetDataForm, MedicalProfileForm
 from backend.models.pets_models import Pets, PetData, MedicalProfile, db
-from backend.services.pets_service import add_pet_data_data, edit_pet_data_data, prepare_medical_profile_data, edit_medical_profile
-
+from backend.services.pets_service import add_pet_data_data, prepare_medical_profile_data, edit_medical_profile
+from backend.services.pets_service import edit_medication_data, edit_vaccination_data, edit_test_result_data, edit_vet_visit_data, edit_medical_document_data
 from backend.services.pets_service import get_pet_by_id, add_pet_profile_data, edit_pet_profile_data, prepare_pet_profile, prepare_pet_data
-from backend.utils.constants import RoleType
+
 from backend.utils.upload_helper import get_upload_path
+from backend.forms.pet_form import VaccinationRecordForm, MedicationForm, TestResultsForm, VetVisitForm, MedicalDocumentForm
 
 
 pets_bp = Blueprint("pets", __name__)
@@ -135,10 +136,70 @@ def edit_medical_data(pet_id):
     return render_template(
         "edit_medical_data.html",
         form=form,
-        vaccine_form=VaccinationRecord(),
+        vaccine_form=VaccinationRecordForm(),
         medication_form=MedicationForm(),
         test_form=TestResultsForm(),
         document_form=MedicalDocumentForm(),
         pet=pet,
         pet_id=pet_id
     )
+
+
+@pets_bp.route("/pets/<int:pet_id>/medical_data/edit_vaccination", methods=["POST"])
+@login_required
+def edit_vaccination(pet_id):
+    form= VaccinationRecordForm()
+
+    if form.validate_on_submit():
+        if not edit_vaccination_data(pet_id, form):
+            return "Medical profile not found", 404
+
+    return redirect(url_for('pets.edit_medical_data', pet_id=pet_id))
+
+
+@pets_bp.route("/pets/<int:pet_id>/medical_data/edit_medication", methods=["POST"])
+@login_required
+def edit_medication(pet_id):
+    form= MedicationForm()
+
+    if form.validate_on_submit():
+        if not edit_medication_data(pet_id, form):
+            return "Medical profile not found", 404
+
+    return redirect(url_for('pets.edit_medical_data', pet_id=pet_id))
+
+
+@pets_bp.route("/pets/<int:pet_id>/medical_data/edit_test_results", methods=["POST"])
+@login_required
+def edit_test_result(pet_id):
+    form= TestResultsForm()
+
+    if form.validate_on_submit():
+        if not edit_test_result_data(pet_id, form):
+            return "Medical profile not found", 404
+
+    return redirect(url_for('pets.edit_medical_data', pet_id=pet_id))
+
+
+@pets_bp.route("/pets/<int:pet_id>/medical_data/edit_vet_visit", methods=["POST"])
+@login_required
+def edit_vet_visit(pet_id):
+    form= VetVisitForm()
+
+    if form.validate_on_submit():
+        if not edit_vet_visit_data(pet_id, form):
+            return "Medical profile not found", 404
+
+    return redirect(url_for('pets.edit_medical_data', pet_id=pet_id))
+
+
+@pets_bp.route("/pets/<int:pet_id>/medical_data/edit_medical_document", methods=["POST"])
+@login_required
+def edit_medical_document(pet_id):
+    form= MedicalDocumentForm()
+
+    if form.validate_on_submit():
+        if not edit_medical_document_data(pet_id, form):
+            return "Medical profile not found", 404
+
+    return redirect(url_for('pets.edit_medical_data', pet_id=pet_id))

@@ -35,6 +35,7 @@ def create_app():
     app.config['PET_IMAGE_UPLOAD_FOLDER'] = os.path.join(base_upload, 'pet_images')
     app.config['USER_IMAGE_UPLOAD_FOLDER'] = os.path.join(base_upload, 'user_images')
     app.config['DATA_UPLOAD_FOLDER'] = os.path.join(base_upload, 'data')
+    app.config['MEDICAL_UPLOAD_FOLDER'] = os.path.join(BASE_UPLOAD_FOLDER, 'medical_docs')
 
     # 🔌 Init extensions
     db.init_app(app)
