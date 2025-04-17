@@ -29,8 +29,7 @@
 
 </div>
 
-
-
+<div class="container mt-4">
 <h5 class="mt-4">🧬 Vaccination Records</h5>
 {% if medical_profile.vaccination_records %}
   {% for record in medical_profile.vaccination_records %}
@@ -41,18 +40,18 @@
         <p><strong>Batch:</strong> {{ record.batch_number or '—' }}</p>
         <p><strong>Previous:</strong> {{ record.previous_vaccination_date or '—' }}</p>
         <p><strong>Next:</strong> {{ record.next_vaccination_date or '—' }}</p>
-        <p><strong>Notes:</strong> {{ record.additional_Info or '—' }}</p>
+        <p><strong>Notes:</strong> {{ record.additional_info or '—' }}</p>
       </div>
     </div>
   {% endfor %}
 {% else %}
-  <p class="text-muted">No vaccination records found.</p>
+  <div class="alert alert-warning" role="alert">
+    <em>No vaccination records found</em>
+  </div>
 {% endif %}
+</div>
 
-
-
-
-
+<div class="container mt-4">
 <h5 class="mt-4">💊 Medications</h5>
 {% if medical_profile.medications %}
   {% for med in medical_profile.medications %}
@@ -61,47 +60,97 @@
         <p><strong>Name:</strong> {{ med.name or '—' }}</p>
         <p><strong>Dosage:</strong> {{ med.dosage or '—' }}</p>
         <p><strong>Duration:</strong> {{ med.duration or '—' }}</p>
-        <p><strong>Notes:</strong> {{ med.additional_Info or '—' }}</p>
+        <p><strong>Notes:</strong> {{ med.additional_info or '—' }}</p>
       </div>
     </div>
   {% endfor %}
 {% else %}
-  <p class="text-muted">No medication records found.</p>
+  <div class="alert alert-warning" role="alert">
+    <em>No medication records found</em>
+  </div>
 {% endif %}
+</div>
 
-
+<div class="container mt-4">
 <h5 class="mt-4">🧪 Test Results</h5>
 {% if medical_profile.test_results %}
-  {% for test in medical_profile.test_results %}
+  {% for test in test_results %}
     <div class="card mb-2">
       <div class="card-body">
         <p><strong>Type:</strong> {{ test.test_type or '—' }}</p>
         <p><strong>Result:</strong> {{ test.result or '—' }}</p>
         <p><strong>Date:</strong> {{ test.date or '—' }}</p>
-        <p><strong>Notes:</strong> {{ test.additional_Info or '—' }}</p>
+        <p><strong>Notes:</strong> {{ test.additional_info or '—' }}</p>
       </div>
     </div>
   {% endfor %}
 {% else %}
-  <p class="text-muted">No test results found.</p>
+  <div class="alert alert-warning" role="alert">
+    <em>No test results found.</em>
+  </div>
 {% endif %}
+</div>
 
+<div class="container mt-4">
+<h5 class="mt-4">🩺 Vet Visits</h5>
+{% if medical_profile.vet_visits %}
+  {% for visit in medical_profile.vet_visits %}
+    <div class="card mb-2">
+      <div class="card-body">
+        <p><strong>Reason:</strong> {{ visit.reason or '—' }}</p>
+        <p><strong>Vet Name:</strong> {{ visit.vet_name or '—' }}</p>
+        <p><strong>Clinic Info:</strong> {{ visit.clinic_info or '—' }}</p>
+        <p><strong>Date:</strong> {{ visit.date or '—' }}</p>
 
+      {% if visit.documents %}
+      <p>
+        <strong>Document:</strong>
+        <a href="{{ url_for('pets.serve_uploaded_file', filename=visit.documents) }}" target="_blank">
+          {{ visit.documents }}
+        </a>
+      </p>
+    {% else %}
+      <p><strong>Document:</strong> <em>—</em></p>
+    {% endif %}
+
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <div class="alert alert-warning" role="alert">
+    <em>No vet visits recorded yet.</em>
+  </div>
+{% endif %}
+</div>
+
+<div class="container mt-4">
 <h5 class="mt-4">📎 Medical Documents</h5>
 {% if medical_profile.medical_documents %}
   {% for doc in medical_profile.medical_documents %}
     <div class="card mb-2">
       <div class="card-body">
-        <p><strong>File:</strong> {{ doc.file_path or '—' }}</p>
+        {% if doc.file_path %}
+          <p>
+            <strong>File:</strong>
+            <a href="{{ url_for('pets.serve_uploaded_file', filename=doc.file_path) }}" target="_blank">
+              {{ doc.file_path }}
+            </a>
+          </p>
+        {% else %}
+          <p><strong>File:</strong> <em>—</em></p>
+        {% endif %}
+
         <p><strong>Description:</strong> {{ doc.description or '—' }}</p>
         <p><strong>Uploaded:</strong> {{ doc.uploaded_at or '—' }}</p>
       </div>
     </div>
   {% endfor %}
 {% else %}
-  <p class="text-muted">No documents uploaded yet.</p>
+  <div class="alert alert-warning" role="alert">
+    <em>No medical documents uploaded yet.</em>
+  </div>
 {% endif %}
-
+</div>
 
 
 {% endblock %}

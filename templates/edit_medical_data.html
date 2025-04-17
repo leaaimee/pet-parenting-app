@@ -43,11 +43,19 @@
 </div>
 
 <hr>
-<h4 class="mt-4">Add Vaccination</h4>
-<button class="btn btn-outline-info mb-3" type="button" onclick="toggleForm('vaccine-form')">+ Add Vaccine</button>
+<div class="text-center mt-4 mb-3">
+  <h4 class="mb-2">Add Vaccination</h4>
+  <button id="vaccine-btn" class="btn btn-outline-info"
+          type="button"
+          onclick="toggleForm('vaccine-form', 'vaccine-btn')"
+          data-label="Vaccine">
+    ➕ Add Vaccine
+  </button>
+</div>
 
 <div id="vaccine-form" style="display: none;">
-  <form method="POST" action="#">
+  <form method="POST" action="{{ url_for('pets.edit_vaccination', pet_id=pet_id) }}">
+
     {{ vaccine_form.hidden_tag() }}
 
     <div class="mb-3">
@@ -71,8 +79,8 @@
       {{ vaccine_form.next_vaccination_date(class="form-control") }}
     </div>
     <div class="mb-3">
-      {{ vaccine_form.additional_Info.label(class="form-label") }}
-      {{ vaccine_form.additional_Info(class="form-control", rows=2) }}
+      {{ vaccine_form.additional_info.label(class="form-label") }}
+      {{ vaccine_form.additional_info(class="form-control", rows=2) }}
     </div>
     <div class="text-center">
       {{ vaccine_form.submit(class="btn btn-success") }}
@@ -80,13 +88,167 @@
   </form>
 </div>
 
-<script>
-  function toggleForm(id) {
-    const form = document.getElementById(id);
-    form.style.display = (form.style.display === "none") ? "block" : "none";
-  }
-</script>
 
+
+
+<hr>
+<div class="text-center mt-4 mb-3">
+  <h4 class="mb-2">Add Medication</h4>
+  <button id="medication-btn" class="btn btn-outline-info"
+          type="button"
+          onclick="toggleForm('medication-form', 'medication-btn')"
+          data-label="Medication">
+    ➕ Add Medication
+  </button>
+</div>
+
+
+<div id="medication-form" style="display: none;">
+  <form method="POST" action="{{ url_for('pets.edit_medication', pet_id=pet_id) }}">
+    {{ medication_form.hidden_tag() }}
+
+    <div class="mb-3">
+      {{ medication_form.name.label(class="form-label") }}
+      {{ medication_form.name(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ medication_form.dosage.label(class="form-label") }}
+      {{ medication_form.dosage(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ medication_form.duration.label(class="form-label") }}
+      {{ medication_form.duration(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ medication_form.additional_info.label(class="form-label") }}
+      {{ medication_form.additional_info(class="form-control", rows=2) }}
+    </div>
+    <div class="text-center">
+      {{ medication_form.submit(class="btn btn-success") }}
+    </div>
+  </form>
+</div>
+
+
+
+<hr>
+<div class="text-center mt-4 mb-3">
+  <h4 class="mb-2">Add Test Result</h4>
+  <button id="test-btn" class="btn btn-outline-info"
+          type="button"
+          onclick="toggleForm('test-form', 'test-btn')"
+          data-label="Test">
+    ➕ Add Test
+  </button>
+</div>
+
+
+<div id="test-form" style="display: none;">
+  <form method="POST" action="{{ url_for('pets.edit_test_result', pet_id=pet_id) }}">
+    {{ test_form.hidden_tag() }}
+
+    <div class="mb-3">
+      {{ test_form.test_type.label(class="form-label") }}
+      {{ test_form.test_type(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ test_form.result.label(class="form-label") }}
+      {{ test_form.result(class="form-control", rows=2) }}
+    </div>
+    <div class="mb-3">
+      {{ test_form.date.label(class="form-label") }}
+      {{ test_form.date(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ test_form.additional_info.label(class="form-label") }}
+      {{ test_form.additional_info(class="form-control", rows=2) }}
+    </div>
+    <div class="text-center">
+      {{ test_form.submit(class="btn btn-success") }}
+    </div>
+  </form>
+</div>
+
+
+
+<hr>
+<div class="text-center mt-4 mb-3">
+  <h4 class="mb-2">Add Vet Visit</h4>
+  <button id="vetvisit-btn" class="btn btn-outline-info"
+          type="button"
+          onclick="toggleForm('vetvisit-form', 'vetvisit-btn')"
+          data-label="Visit">
+    ➕ Add Visit
+  </button>
+</div>
+
+
+<div id="vetvisit-form" style="display: none;">
+  <form method="POST" action="{{ url_for('pets.edit_vet_visit', pet_id=pet_id) }}" enctype="multipart/form-data">
+    {{ vet_visit_form.hidden_tag() }}
+
+    <div class="mb-3">
+      {{ vet_visit_form.reason.label(class="form-label") }}
+      {{ vet_visit_form.reason(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ vet_visit_form.vet_name.label(class="form-label") }}
+      {{ vet_visit_form.vet_name(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ vet_visit_form.clinic_info.label(class="form-label") }}
+      {{ vet_visit_form.clinic_info(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ vet_visit_form.date.label(class="form-label") }}
+      {{ vet_visit_form.date(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ vet_visit_form.documents.label(class="form-label") }}
+      {{ vet_visit_form.documents(class="form-control") }}
+    </div>
+    <div class="text-center">
+      {{ vet_visit_form.submit(class="btn btn-success") }}
+    </div>
+  </form>
+</div>
+
+
+
+<hr>
+<div class="text-center mt-4 mb-3">
+  <h4 class="mb-2">Add Medical Document</h4>
+  <button id="document-btn" class="btn btn-outline-info"
+          type="button"
+          onclick="toggleForm('document-form', 'document-btn')"
+          data-label="Document">
+    ➕ Add Document
+  </button>
+</div>
+
+
+
+<div id="document-form" style="display: none;">
+  <form method="POST" action="{{ url_for('pets.edit_medical_document', pet_id=pet_id) }}" enctype="multipart/form-data">
+    {{ document_form.hidden_tag() }}
+
+    <div class="mb-3">
+      {{ document_form.file.label(class="form-label") }}
+      {{ document_form.file(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ document_form.description.label(class="form-label") }}
+      {{ document_form.description(class="form-control", rows=3) }}
+    </div>
+    <div class="mb-3">
+      {{ document_form.uploaded_at.label(class="form-label") }}
+      {{ document_form.uploaded_at(class="form-control") }}
+    </div>
+    <div class="text-center">
+      {{ document_form.submit(class="btn btn-success") }}
+    </div>
+  </form>
+</div>
 
 
 
@@ -95,17 +257,13 @@
   function toggleForm(formId, buttonId) {
     const form = document.getElementById(formId);
     const button = document.getElementById(buttonId);
+    const label = button.dataset.label || "";
 
-    if (form.style.display === "none") {
-      form.style.display = "block";
-      button.innerText = "✖️ Hide Form";
-    } else {
-      form.style.display = "none";
-      button.innerText = "➕ Add Vaccine";
-    }
+    const isVisible = form.style.display === "block";
+    form.style.display = isVisible ? "none" : "block";
+    button.innerText = isVisible ? `➕ Add ${label}` : `✖ Hide ${label}`;
   }
 </script>
-
 
 
 {% endblock %}

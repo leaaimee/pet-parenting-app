@@ -90,7 +90,7 @@ class VaccinationRecord(db.Model):
     batch_number = db.Column(db.String(50), nullable=True)
     previous_vaccination_date = db.Column(db.Date, nullable=True)
     next_vaccination_date = db.Column(db.String(50), nullable=True)
-    additional_Info = db.Column(db.Text, nullable=True)
+    additional_info = db.Column(db.Text, nullable=True)
 
     medical_profile = db.relationship("MedicalProfile", back_populates="vaccination_records")
 
@@ -103,7 +103,7 @@ class Medication(db.Model):
     name = db.Column(db.String(100), nullable=False)
     dosage = db.Column(db.String(100))
     duration = db.Column(db.String(100))
-    additional_Info = db.Column(db.Text)
+    additional_info = db.Column(db.Text)
 
     medical_profile = db.relationship("MedicalProfile", back_populates="medications")
 
@@ -117,7 +117,7 @@ class TestResult(db.Model):
     test_type = db.Column(db.String(100))
     result = db.Column(db.Text)
     date = db.Column(db.Date)
-    additional_Info = db.Column(db.Text)
+    additional_info = db.Column(db.Text)
 
     medical_profile = db.relationship("MedicalProfile", back_populates="test_results")
 

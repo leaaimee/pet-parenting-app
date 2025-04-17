@@ -1,10 +1,11 @@
 from flask import Flask
 from flask_migrate import Migrate
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from .database import db
 from dotenv import load_dotenv
 import os
+from flask_jwt_extended import JWTManager
+from flasgger import Swagger
 
 from backend.models.invitations_models import *
 from backend.routes.landing_routes import landing_bp
@@ -28,14 +29,22 @@ def create_app():
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
     app.config["SESSION_COOKIE_SECURE"] = False
 
+    # JWT
+    app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+    # JWT setup
+    jwt = JWTManager(app)
+
+    # Swagger
+    swagger = Swagger(app)
+
     # 📦 File upload config
     base_upload = os.path.join(os.getcwd(), 'backend', 'uploads')
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
     app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}
     app.config['PET_IMAGE_UPLOAD_FOLDER'] = os.path.join(base_upload, 'pet_images')
     app.config['USER_IMAGE_UPLOAD_FOLDER'] = os.path.join(base_upload, 'user_images')
-    app.config['DATA_UPLOAD_FOLDER'] = os.path.join(base_upload, 'data')
-    app.config['MEDICAL_UPLOAD_FOLDER'] = os.path.join(BASE_UPLOAD_FOLDER, 'medical_docs')
+    app.config['MEDICAL_UPLOAD_FOLDER'] = os.path.join(base_upload, 'medical_docs')
+
 
     # 🔌 Init extensions
     db.init_app(app)

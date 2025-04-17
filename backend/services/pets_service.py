@@ -271,12 +271,13 @@ def ensure_medical_profile(pet_id):
     return profile
 
 
-def edit_vaccination_data(pet_id, form):
+def add_vaccination_data(pet_id, form):
     profile = ensure_medical_profile(pet_id)
     if not profile:
         return None
 
     vaccination_record = VaccinationRecord(
+        pet_id=pet_id,
         medical_profile_id=profile.id,
         vaccine_name=form.vaccine_name.data,
         dose_number=form.dose_number.data,
@@ -291,12 +292,13 @@ def edit_vaccination_data(pet_id, form):
     return vaccination_record
 
 
-def edit_medication_data(pet_id, form):
+def add_medication_data(pet_id, form):
     profile = ensure_medical_profile(pet_id)
     if not profile:
         return None
 
     new_med = Medication(
+        pet_id=pet_id,
         medical_profile_id=profile.id,
         name=form.name.data,
         dosage=form.dosage.data,
@@ -309,12 +311,13 @@ def edit_medication_data(pet_id, form):
     return new_med
 
 
-def edit_test_result_data(pet_id, form):
+def add_test_result_data(pet_id, form):
     profile = ensure_medical_profile(pet_id)
     if not profile:
         return None
 
     new_test_result = TestResult(
+        pet_id=pet_id,
         medical_profile_id=profile.id,
         test_type=form.test_type.data,
         result=form.result.data,
@@ -327,7 +330,7 @@ def edit_test_result_data(pet_id, form):
     return new_test_result
 
 
-def edit_vet_visit_data(pet_id, form):
+def add_vet_visit_data(pet_id, form):
     profile = ensure_medical_profile(pet_id)
     if not profile:
         return None
@@ -336,6 +339,7 @@ def edit_vet_visit_data(pet_id, form):
     filename = save_file(file, get_upload_path("medical")) if file else ""
 
     new_vet_visit = VetVisit(
+        pet_id=pet_id,
         medical_profile_id=profile.id,
         reason=form.reason.data,
         vet_name=form.vet_name.data,
@@ -349,7 +353,7 @@ def edit_vet_visit_data(pet_id, form):
     return new_vet_visit
 
 
-def edit_medical_document_data(pet_id, form):
+def add_medical_document_data(pet_id, form):
     profile = ensure_medical_profile(pet_id)
     if not profile:
         return None
@@ -358,6 +362,7 @@ def edit_medical_document_data(pet_id, form):
     filename = save_file(file, get_upload_path("medical")) if file else ""
 
     new_medical_document = MedicalDocument(
+        pet_id=pet_id,
         medical_profile_id=profile.id,
         file_path=filename,
         description=form.description.data,
