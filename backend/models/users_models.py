@@ -1,25 +1,29 @@
-from backend.database import db
+from backend.database import Base
+from sqlalchemy import Column, Integer, String, Text, Date, DateTime, ForeignKey, Boolean, Enum
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+
 from backend.utils.constants import RoleType, AccessLevel, InvitationStatus
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import UserMixin
 
-class Users(db.Model, UserMixin):
+
+class Users(Base):
     __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key= True)
-    name = db.Column(db.String(100), nullable=False)
-    pronouns = db.Column(db.String(50))
-    email = db.Column(db.String(100), nullable=False, unique=True)
-    password_hash = db.Column(db.String(200), nullable=False)
-    profile_picture = db.Column(db.String(300))
-    profile_description = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=db.func.now())
-    phone = db.Column(db.String(20), nullable=True)
-    location = db.Column(db.String(100))
-    birth_date = db.Column(db.Date)
-    languages_spoken = db.Column(db.String(100))
-    experience_with = db.Column(db.Text)
-    certifications = db.Column(db.Text)
-    certification_files = db.Column(db.String(300))
+    id = Column(Integer, primary_key= True)
+    name = Column(String(100), nullable=False)
+    pronouns = Column(String(50))
+    email = Column(String(100), nullable=False, unique=True)
+    password_hash = Column(String(200), nullable=False)
+    profile_picture = Column(String(300))
+    profile_description = Column(Text)
+    created_at = Column(DateTime, default=func.now())
+    phone = Column(String(20), nullable=True)
+    location = Column(String(100))
+    birth_date = Column(Date)
+    languages_spoken = Column(String(100))
+    experience_with = Column(Text)
+    certifications = Column(Text)
+    certification_files = Column(String(300))
 
 
     def set_password(self, password):
@@ -28,36 +32,36 @@ class Users(db.Model, UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    roles = db.relationship('Roles', back_populates='user', lazy=True)
-    assigned_tasks = db.relationship('Tasks', backref='assigned_user', lazy=True)
-    sitting_assignments = db.relationship('Sitters', back_populates='sitter', overlaps="sitters")
-    pets = db.relationship("Pets", back_populates="parent")
+    roles = relationship('Roles', back_populates='user', lazy=True)
+    assigned_tasks = relationship('Tasks', backref='assigned_user', lazy=True)
+    sitting_assignments = relationship('Sitters', back_populates='sitter', overlaps="sitters")
+    pets = relationship("Pets", back_populates="parent")
 
 
-class Roles(db.Model):
+class Roles(Base):
     __tablename__ = "roles"
-    id = db.Column(db.Integer, primary_key=True)
-    pet_id = db.Column(db.Integer, db.ForeignKey('pets.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    role = db.Column(db.Enum(RoleType), nullable=False)
-    access_level = db.Column(db.Enum(AccessLevel), nullable=False, default=AccessLevel.VIEW_ALL)
+    id = Column(Integer, primary_key=True)
+    pet_id = Column(Integer, ForeignKey('pets.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    role = Column(Enum(RoleType), nullable=False)
+    access_level = Column(Enum(AccessLevel), nullable=False, default=AccessLevel.VIEW_ALL)
 
-    pet = db.relationship('Pets', back_populates='roles')
-    user = db.relationship('Users', back_populates='roles')
+    pet = relationship('Pets', back_populates='roles')
+    user = relationship('Users', back_populates='roles')
 
 
-class Sitters(db.Model):
+class Sitters(Base):
     __tablename__ = "sitters"
-    id = db.Column(db.Integer, primary_key=True)
-    pet_id = db.Column(db.Integer, db.ForeignKey("pets.id"), nullable=False)
-    sitter_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    start_date = db.Column(db.DateTime, nullable=True)
-    end_date = db.Column(db.DateTime, nullable=True)
-    invitation_status = db.Column(db.Enum(InvitationStatus), default=InvitationStatus.PENDING, nullable=False) # default: pending
-    completed = db.Column(db.Boolean, default=False)
-    access_level = db.Column(db.Enum(AccessLevel), nullable=False, default=AccessLevel.VIEW_LIMITED)
+    id = Column(Integer, primary_key=True)
+    pet_id = Column(Integer, ForeignKey("pets.id"), nullable=False)
+    sitter_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    start_date = Column(DateTime, nullable=True)
+    end_date = Column(DateTime, nullable=True)
+    invitation_status = Column(Enum(InvitationStatus), default=InvitationStatus.PENDING, nullable=False) # default: pending
+    completed = Column(Boolean, default=False)
+    access_level = Column(Enum(AccessLevel), nullable=False, default=AccessLevel.VIEW_LIMITED)
 
-    pet = db.relationship('Pets', backref='sitter_assignments')
-    sitter = db.relationship('Users', back_populates='sitting_assignments')
+    pet = relationship('Pets', backref='sitter_assignments')
+    sitter = relationship('Users', back_populates='sitting_assignments')
 
 

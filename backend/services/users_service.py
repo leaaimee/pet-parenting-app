@@ -1,5 +1,4 @@
 from werkzeug.security import generate_password_hash
-from backend.database import db
 from backend.models.users_models import Users
 from backend.utils.upload_helper import get_upload_path
 from flask import request

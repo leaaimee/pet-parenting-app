@@ -1,118 +1,126 @@
-from flask import Blueprint, render_template, redirect, url_for, request, redirect
-from flask import jsonify, url_for, send_from_directory
-from flask_login import login_required, current_user, login_url, login_user, logout_user
-from backend.forms.user_form import RegistrationForm, LoginForm, EditUserProfileForm
-from backend.models.users_models import Users, db
-from werkzeug.security import generate_password_hash, check_password_hash
-from backend.services.users_service import get_user_profile, edit_user_profile_data, create_user_profile_data
-from backend.utils.upload_helper import get_upload_path
-users_bp = Blueprint("users", __name__)
-from flask_jwt_extended import create_access_token
+import mimetypes
+import os
+
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import FileResponse
+
 from backend.models.users_models import Users
 
+from backend.services.users_service import get_user_profile, edit_user_profile_data, create_user_profile_data
+
+from backend.schemas.user_schema import UserProfileSchema, UserCreateSchema, UserLoginSchema, UserEditProfileSchema
+from backend.schemas.user_schema import TokenRequest
+
+from backend.auth.jwt import get_current_user, create_access_token
+
+from backend.utils.upload_helper import get_upload_subpath, VALID_SUBCATEGORIES
+
+from werkzeug.security import check_password_hash
 
 
-@users_bp.route('/user-profile')
-@login_required
-def user_profile():
-    return render_template("show_user_profile.html", user=current_user)
+
+router = APIRouter()
 
 
-@users_bp.route('/add_user_profile', methods=['GET', 'POST'])
-def add_user_profile():
-    form = RegistrationForm()
-    if form.validate_on_submit():
-        new_user = create_user_profile_data(form)
 
-        if new_user:
-            login_user(new_user)
-            return redirect(url_for('users.show_user_profile', user_id=new_user.id))
+@router.post("/", response_model=UserProfileSchema, status_code=201)
+def register_user(user_data: UserCreateSchema):
+    new_user = create_user_profile_data(user_data)
 
-    return render_template("landing.html", register_form=form, login_form=LoginForm())
+    if not new_user:
+        raise HTTPException(status_code=400, detail="User creation failed")
 
-
-@users_bp.route("/login", methods=["GET", "POST"])
-def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = Users.query.filter_by(email=form.email.data).first()
-
-        if user and check_password_hash(user.password_hash, form.password.data):
-            login_user(user)
-            return redirect(url_for('landing.home'))
-
-    return redirect(url_for('landing.home'))
+    return{
+        "id": new_user.id,
+        "email": new_user.email,
+        "name": new_user.name
+    }
 
 
-@users_bp.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for("landing.home"))
+@router.post("/login")
+def login_user(user_data: UserLoginSchema):
+    user = Users.query.filter_by(email=user_data.email).first()
+
+    if not user or not check_password_hash(user.password_hash, user_data.password):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    return {"access_token": "FAKE-TOKEN-FOR-NOW", "token_type": "bearer"}
 
 
-@users_bp.route('/edit-profile', methods=['GET', 'POST'])
-@login_required
-def edit_user_profile():
-    form = EditUserProfileForm(obj=current_user)
+@router.put("/edit")
+def edit_user_profile(
+        updated_data: UserEditProfileSchema,
+        current_user: dict = Depends(get_current_user)
+):
+    updated_user = edit_user_profile_data(current_user, updated_data)
 
-    if form.validate_on_submit():
-        edit_user_profile_data(current_user, form)
+    if not updated_user:
+        raise HTTPException(status_code=400, detail="Profile update failed")
 
-        return redirect(url_for('users.show_user_profile', user=current_user))
+    return {
+        "id": updated_user.id,
+        "email": updated_user.email,
+        "name": updated_user.name,
+        "phone": updated_user.phone,
+        "location": updated_user.location,
+        "birth_date": updated_user.birth_date,
+        "pronouns": updated_user.pronouns,
+        "profile_description": updated_user.profile_description,
+        "languages_spoken": updated_user.languages_spoken,
+        "experience_with": updated_user.experience_with,
+        "certifications": updated_user.certifications,
+        "profile_picture": updated_user.profile_picture
+    }
 
-    return render_template("edit_user_profile.html", form=form, user=current_user)
+
+@router.get("/media/user/{subcategory}/{filename}")
+def serve_user_image(subcategory: str, filename: str):
+    """Serve user image from subcategories like profile_pic."""
+    if subcategory not in VALID_SUBCATEGORIES["user"]:
+        raise HTTPException(status_code=400, detail="Invalid user image subcategory")
+
+    file_path = os.path.join(get_upload_subpath("user", subcategory), filename)
+
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+
+    return FileResponse(path=file_path, media_type=mimetypes.guess_type(file_path)[0] or "application/octet-stream")
 
 
-@users_bp.route('/media/user/<filename>')
-def user_image(filename):
-    return send_from_directory(get_upload_path("user"), filename)
 
 
-@users_bp.route('/profile/', methods=['GET'])
-@login_required
-def show_user_profile():
-    user = get_user_profile(current_user.id)
+
+router.get("/profile", response_model=UserProfileSchema)
+def show_user_profile(current_user: dict = Depends(get_current_user)):
+    user = get_user_profile(current_user["id"])
+
     if not user:
-        return "User not found", 404
-    return render_template("show_user_profile.html", user=user)
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return user
 
 
-@users_bp.route("/token", methods=["POST"])
-def get_token():
-    username = request.json.get("username")
-    if not username:
-        return jsonify({"msg": "Missing username"}), 400
+@router.post("/token")
+def get_token(data: TokenRequest):
+    if not data.username:
+        raise HTTPException(status_code=400, detail="Missing username")
 
-    access_token = create_access_token(identity=username)
-    return jsonify(access_token=access_token)
-
-
-
-
-from flask_jwt_extended import jwt_required, get_jwt_identity
-
-@users_bp.route("/whoami", methods=["GET"])
-@jwt_required()
-def whoami():
-    """
-    Get current authenticated user
-    ---
-    tags:
-      - Users
-    responses:
-      200:
-        description: Returns the current user's name
-        examples:
-          application/json: { "message": "Hello, Ellen Ripley" }
-    """
-    current_user = get_jwt_identity()
-    return jsonify(message=f"Hello: {current_user}"), 200
+    token = create_access_token({"sub" : data.username})
+    return {
+        "access_token": token,
+        "token_type": "bearer"
+    }
 
 
-@users_bp.route("/protected", methods=["GET"])
-@jwt_required()
-def protected_route():
-    current_identity = get_jwt_identity()
-    return jsonify({"message": f"Hello, {current_identity}. You're in a secure zone."}), 200
+@router.get("/whoami")
+def whoami(current_user: dict = Depends(get_current_user)):
+    return {"message": f"Hello: {current_user['username']}"}
+
+
+@router.get("/protected")
+def protected_route(current_user: dict = Depends(get_current_user)):
+    return {"message": f"Hello, {current_user['username']}. You're in a secure zone."}
+
+
+
 

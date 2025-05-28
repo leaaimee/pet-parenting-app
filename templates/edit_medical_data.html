@@ -54,7 +54,7 @@
 </div>
 
 <div id="vaccine-form" style="display: none;">
-  <form method="POST" action="{{ url_for('pets.edit_vaccination', pet_id=pet_id) }}">
+  <form method="POST" action="{{ url_for('pets.add_vaccination', pet_id=pet_id) }}">
 
     {{ vaccine_form.hidden_tag() }}
 
@@ -104,7 +104,7 @@
 
 
 <div id="medication-form" style="display: none;">
-  <form method="POST" action="{{ url_for('pets.edit_medication', pet_id=pet_id) }}">
+  <form method="POST" action="{{ url_for('pets.add_medication', pet_id=pet_id) }}">
     {{ medication_form.hidden_tag() }}
 
     <div class="mb-3">
@@ -144,7 +144,7 @@
 
 
 <div id="test-form" style="display: none;">
-  <form method="POST" action="{{ url_for('pets.edit_test_result', pet_id=pet_id) }}">
+  <form method="POST" action="{{ url_for('pets.add_test_result', pet_id=pet_id) }}">
     {{ test_form.hidden_tag() }}
 
     <div class="mb-3">
@@ -184,7 +184,7 @@
 
 
 <div id="vetvisit-form" style="display: none;">
-  <form method="POST" action="{{ url_for('pets.edit_vet_visit', pet_id=pet_id) }}" enctype="multipart/form-data">
+  <form method="POST" action="{{ url_for('pets.add_vet_visit', pet_id=pet_id) }}" enctype="multipart/form-data">
     {{ vet_visit_form.hidden_tag() }}
 
     <div class="mb-3">
@@ -229,7 +229,7 @@
 
 
 <div id="document-form" style="display: none;">
-  <form method="POST" action="{{ url_for('pets.edit_medical_document', pet_id=pet_id) }}" enctype="multipart/form-data">
+  <form method="POST" action="{{ url_for('pets.add_medical_document', pet_id=pet_id) }}" enctype="multipart/form-data">
     {{ document_form.hidden_tag() }}
 
     <div class="mb-3">

@@ -1,15 +1,17 @@
-from backend.database import db
+from backend.database import Base
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey
 
-class Tasks(db.Model):
+
+class Tasks(Base):
     __tablename__ = "tasks"
-    id = db.Column(db.Integer, primary_key=True)
-    pet_id = db.Column(db.Integer, db.ForeignKey("pets.id"), nullable=False)
-    care_type = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    due_date = db.Column(db.DateTime, nullable=True)
-    assigned_to = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
-    completed = db.Column(db.Boolean, default=False)
-    completed_at = db.Column(db.DateTime, nullable=True)
-    priority = db.Column(db.String(50), nullable=True)
-    recurring = db.Column(db.Boolean, default=False)
-    frequency = db.Column(db.String(50), nullable=True)
+    id = Column(Integer, primary_key=True)
+    pet_id = Column(Integer, ForeignKey("pets.id"), nullable=False)
+    care_type = Column(String(100), nullable=False)
+    description = Column(Text, nullable=True)
+    due_date = Column(DateTime, nullable=True)
+    assigned_to = Column(Integer, ForeignKey("users.id"), nullable=True)
+    completed = Column(Boolean, default=False)
+    completed_at = Column(DateTime, nullable=True)
+    priority = Column(String(50), nullable=True)
+    recurring = Column(Boolean, default=False)
+    frequency = Column(String(50), nullable=True)
