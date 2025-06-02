@@ -1,5 +1,9 @@
+from datetime import datetime
+
 from pydantic import BaseModel, EmailStr
 from wtforms.validators import Optional
+
+from media_schema import MediaBaseShowSchema
 
 
 class UserCreateSchema(BaseModel):
@@ -18,18 +22,42 @@ class UserLoginSchema(BaseModel):
     password: str
 
 
-class UserEditProfileSchema(BaseModel):
-    name: Optional[str] = None
-    email: Optional[EmailStr] = None
-    phone: Optional[str] = None
-    location: Optional[str] = None
-    birth_date: Optional[str] = None
-    pronouns: Optional[str] = None
-    profile_description: Optional[str] = None
-    languages_spoken: Optional[str] = None
-    experience_with: Optional[str] = None
-    certifications: Optional[str] = None
-    profile_picture: Optional[str] = None
+class UserProfileShowSchema(BaseModel):
+    id: int
+    name: str | None = None
+    pronouns: str | None = None
+    email: EmailStr | None = None
+    phone: str | None = None
+    location: str | None = None
+    birth_date: str | None = None
+    profile_image: [MediaBaseShowSchema] | None = None
+    profile_description: str | None = None
+    languages_spoken: str | None = None
+    experience_with: str | None = None
+    certifications: str | None = None
+    created_at: datetime | None = None
+
+
+class UserProfileEditSchema(BaseModel):
+    name: str | None = None
+    pronouns: str | None = None
+    email: EmailStr | None = None
+    phone: str | None = None
+    location: str | None = None
+    birth_date: str | None = None
+    profile_image: [MediaBaseShowSchema] | None = None
+    profile_description: str | None = None
+    languages_spoken: str | None = None
+    experience_with: str | None = None
+    certifications: str | None = None
+    created_at: datetime | None = None
+
+
+class UserProfilePublicSchema(BaseModel):
+    id: int
+    name: str
+    profile_image: str | None = None
+    profile_description: str | None = None
 
 
 class TokenRequest(BaseModel):

@@ -16,13 +16,17 @@ class Pets(Base):
     species = Column(String(100), nullable=False)
     subspecies = Column(String(100), nullable=True)
     gender = Column(String(20), nullable=True)
-    profile_picture = Column(String(300), nullable=False, default="")
+
+    profile_image_id = Column(Integer, ForeignKey("uploaded_files.id"), nullable=True)
+    profile_image = relationship("UploadedFile", foreign_keys=[profile_image_id])
+
     profile_description = Column(Text, nullable=False, default="")
     created_at = Column(DateTime, default=func.now())
 
     parent_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     parent = relationship("Users", back_populates="pets")
 
+    uploaded_files = relationship("UploadedFile", back_populates="pet")
     roles = relationship('Roles', back_populates='pet', lazy=True)
     pet_data = relationship('PetData', backref='pet', lazy=True)
     medical_profile = relationship("MedicalProfile", back_populates="pet", lazy=True)
@@ -135,9 +139,10 @@ class VetVisit(Base):
     vet_name = Column(String(100))
     clinic_info = Column(Text)
     date = Column(Date)
-    documents = Column(String(300))
+    documents = relationship("MedicalDocument", back_populates="vet_visit")
 
     medical_profile = relationship("MedicalProfile", back_populates="vet_visits")
+    linked_documents = relationship("VetVisitDocument", back_populates="vet_visit", cascade="all, delete")
 
 
 class MedicalDocument(Base):
@@ -150,3 +155,18 @@ class MedicalDocument(Base):
     uploaded_at = Column(DateTime, default=func.now())
 
     medical_profile = relationship("MedicalProfile", back_populates="medical_documents")
+    linked_visits = relationship("VetVisitDocument", back_populates="medical_document", cascade="all, delete")
+
+    vet_visit_id = Column(Integer, ForeignKey("vet_visits.id"), nullable=True)
+    vet_visit = relationship("VetVisit", back_populates="documents")
+
+
+class VetVisitDocument(Base):
+    __tablename__ = "vet_visit_documents"
+    id = Column(Integer, primary_key=True)
+
+    vet_visit_id = Column(Integer, ForeignKey("vet_visits.id"), nullable=False)
+    medical_document_id = Column(Integer, ForeignKey("medical_documents.id"), nullable=False)
+
+    vet_visit = relationship("VetVisit", back_populates="linked_documents")
+    medical_document = relationship("MedicalDocument", back_populates="linked_visits")

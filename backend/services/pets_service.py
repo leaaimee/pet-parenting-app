@@ -1,14 +1,17 @@
-from fastapi import UploadFile
+from fastapi import UploadFile,HTTPException
 
-
-from backend.models.pets_models import PetData, MedicalProfile, Medication, VaccinationRecord, TestResult, VetVisit, MedicalDocument
+from datetime import datetime
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
 from sqlalchemy.orm import Session
+
 from backend.models.pets_models import Pets
-from backend.models.users_models import Sitters
+from backend.models.users_models import Users, Sitters
+from backend.models.media_models import UploadedFile
 
 from sqlalchemy.exc import SQLAlchemyError
-from backend.utils.file_utils import save_file
+
 from backend.utils.upload_helper import save_uploaded_file
 
 from backend.schemas.pet_schema import PetProfileAddSchema, PetDataAddSchema, PetProfileEditSchema, PetDataEditSchema
@@ -17,6 +20,12 @@ from backend.schemas.pet_schema import PetVaccinationAddSchema, PetVaccinationEd
 from backend.schemas.pet_schema import PetMedicationAddSchema, PetMedicationEditSchema
 from backend.schemas.pet_schema import PetTestResultAddSchema, PetTestResultEditSchema
 from backend.schemas.pet_schema import PetVetVisitAddSchema, PetVetVisitEditSchema
+
+
+
+
+from backend.models.pets_models import PetData, MedicalProfile, Medication, VaccinationRecord, TestResult, VetVisit, MedicalDocument
+
 
 from backend.utils.pet_helpers import pet_birthday
 from backend.services.helpers.general_helpers import apply_updates
@@ -29,8 +38,10 @@ def get_user_pets_service(user_id: int, db: Session):
     ).all()
 
 
+
 def get_pet_by_id(pet_id: int, db: Session):
     return db.query(Pets).filter(Pets.id == pet_id).first()
+
 
 
 def verify_pet_access(pet_id: int, user_id: int, db: Session):
@@ -38,6 +49,7 @@ def verify_pet_access(pet_id: int, user_id: int, db: Session):
     if not pet or pet.parent_id != user_id:
         return None
     return pet
+
 
 
 def view_pets_family_data_service(user_id: int, db: Session):
@@ -61,6 +73,44 @@ def view_pets_family_data_service(user_id: int, db: Session):
 
 def get_pet_profile_data_service(pet_id: int, user_id: int, db: Session):
     return db.query(Pets).filter(Pets.id == pet_id, Pets.parent_id == user_id).first()
+
+
+
+
+async def add_pet_profile_image_service(
+    session: AsyncSession,
+    file: UploadFile,
+    pet_id: int
+) -> UploadedFile:
+    # Step 1: Save file to disk & get metadata
+    file_info = await save_uploaded_file(file, category="pet", subcategory="profile_pic")
+    file_hash: str = file_info["file_hash"]
+
+    # Step 2: Deduplication check
+    existing = await session.execute(
+        select(UploadedFile).where(UploadedFile.file_hash == file_hash)
+    )
+    existing_file = existing.scalar_one_or_none()
+
+    if existing_file:
+        # Step 3: Reassign pet_id if needed
+        if existing_file.pet_id != pet_id:
+            existing_file.pet_id = pet_id
+            await session.commit()
+        return existing_file
+
+    # Step 4: Create new file entry
+    new_file = UploadedFile(
+        **file_info,
+        pet_id=pet_id,
+        upload_time=datetime.utcnow()
+    )
+    session.add(new_file)
+    await session.commit()
+    await session.refresh(new_file)
+
+    return new_file
+
 
 
 def prepare_pet_profile_data(data: PetProfileAddSchema, user_id: int) -> dict:
@@ -442,6 +492,25 @@ def edit_vet_visit_data_service(
     db.commit()
     db.refresh(record)
     return record
+
+
+async def link_document_to_vet_visit_service(
+    session: AsyncSession,
+    document_id: int,
+    vet_visit_id: int
+) -> MedicalDocument:
+    doc = await session.get(MedicalDocument, document_id)
+    visit = await session.get(VetVisit, vet_visit_id)
+
+    if not doc or not visit:
+        raise HTTPException(status_code=404, detail="Document or Vet Visit not found")
+
+    doc.vet_visit_id = vet_visit_id
+    await session.commit()
+    await session.refresh(doc)
+    return doc
+
+
 
 
 def add_medical_document_data_service()

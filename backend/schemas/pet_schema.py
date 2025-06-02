@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import date, datetime
 
+from backend.schemas.media_schema import MediaBaseShowSchema
+
 
 class PetBasicSchema(BaseModel):
     id: int
@@ -24,15 +26,16 @@ class PetProfileShowSchema(BaseModel):
     species: str | None = None
     subspecies: str | None = None
     gender: str | None = None
-    profile_picture: str | None = None
+    profile_picture: MediaBaseShowSchema | None = None
     profile_description: str | None = None
     created_at: datetime | None = None
 
-    pet_data: Optional["PetDataSchema"]
+    pet_data: Optional["PetDataShowSchema"]
 
     class Config:
         orm_mode = True
 
+PetProfileShowSchema.update_forward_refs()
 
 class PetProfileAddSchema(BaseModel):
     name: str
@@ -229,7 +232,7 @@ class PetTestResultShowSchema(BaseModel):
     medical_profile_id: int | None = None
     test_type: str | None = None
     result: str | None = None
-    date: date | None = None
+    test_date: date | None = None
     additional_info: str | None = None
 
     class Config:
@@ -239,7 +242,7 @@ class PetTestResultShowSchema(BaseModel):
 class PetTestResultAddSchema(BaseModel):
     test_type: str | None = None
     result: str | None = None
-    date: date | None = None
+    test_date: date | None = None
     additional_info: str | None = None
 
     class Config:
@@ -249,49 +252,12 @@ class PetTestResultAddSchema(BaseModel):
 class PetTestResultEditSchema(BaseModel):
     test_type: str | None = None
     result: str | None = None
-    date: date | None = None
+    test_date: date | None = None
     additional_info: str | None = None
 
     class Config:
         orm_mode = True
 
-
-class PetVetVisitShowSchema(BaseModel):
-    id: int
-    pet_id: int | None = None
-    medical_profile_id: int | None = None
-    reason: str | None = None
-    vet_name: str | None = None
-    clinic_info: str | None = None
-    date: date | None = None
-    documents: str | None = None
-
-    class Config:
-        orm_mode = True
-
-
-class PetVetVisitAddSchema(BaseModel):
-    medical_profile_id: int | None = None
-    reason: str | None = None
-    vet_name: str | None = None
-    clinic_info: str | None = None
-    date: str | None = None
-    documents: str | None = None
-
-    class Config:
-        orm_mode = True
-
-
-class PetVetVisitEditSchema(BaseModel):
-    medical_profile_id: int | None = None
-    reason: str | None = None
-    vet_name: str | None = None
-    clinic_info: str | None = None
-    date: date | None = None
-    documents: str | None = None
-
-    class Config:
-        orm_mode = True
 
 
 class PetMedicalDocumentShowSchema(BaseModel):
@@ -328,3 +294,44 @@ class PetMedicalDocumentEditSchema(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+
+class PetVetVisitShowSchema(BaseModel):
+    id: int
+    pet_id: int | None = None
+    medical_profile_id: int | None = None
+    reason: str | None = None
+    vet_name: str | None = None
+    clinic_info: str | None = None
+    visit_date: date | None = None
+    documents: list[PetMedicalDocumentShowSchema] = []
+
+    class Config:
+        orm_mode = True
+
+
+class PetVetVisitAddSchema(BaseModel):
+    medical_profile_id: int | None = None
+    reason: str | None = None
+    vet_name: str | None = None
+    clinic_info: str | None = None
+    visit_date: str | None = None
+    documents: list[PetMedicalDocumentShowSchema] = []
+
+    class Config:
+        orm_mode = True
+
+
+class PetVetVisitEditSchema(BaseModel):
+    medical_profile_id: int | None = None
+    reason: str | None = None
+    vet_name: str | None = None
+    clinic_info: str | None = None
+    visit_date: date | None = None
+    documents: list[PetMedicalDocumentShowSchema] = []
+
+    class Config:
+        orm_mode = True
+
+

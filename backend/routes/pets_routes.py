@@ -1,14 +1,23 @@
 import os
+import mimetypes
 
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
+
 from fastapi.responses import FileResponse
 
 
 from sqlalchemy.orm import Session
+from sqlalchemy.future import select
+
 from backend.auth.jwt import get_current_user
 from backend.database import get_db
 
 from datetime import date
+from sqlalchemy.ext.asyncio import AsyncSession
+
+
+from backend.schemas.media_schema import MediaBaseShowSchema
+
 
 
 from backend.schemas.pet_schema import PetBasicSchema, PetProfileShowSchema, PetProfileAddSchema, PetProfileEditSchema, \
@@ -32,6 +41,7 @@ from backend.services.pets_service import add_pet_data_service, get_medical_prof
 from backend.services.pets_service import add_test_result_data_service, edit_test_result_data_service
 from backend.services.pets_service import add_vet_visit_data_service, edit_vet_visit_data_service
 from backend.services.pets_service import add_medical_document_data_service
+from backend.services.pets_service import add_pet_profile_image_service
 
 from backend.utils.upload_helper import get_upload_subpath, VALID_SUBCATEGORIES
 
@@ -68,7 +78,7 @@ def get_pet_profile_data(
 
 
 
-@router.post("/pets/add")
+@router.post("/pets", response_model=PetProfileShowSchema)
 def add_pet_profile_data(
         pet_data: PetProfileAddSchema,
         current_user: dict = Depends(get_current_user),
@@ -85,7 +95,7 @@ def add_pet_profile_data(
 
 
 
-@router.put("/pets/{pet_id}", response_model=PetProfileShowSchema)
+@router.patch("/pets/{pet_id}", response_model=PetProfileShowSchema)
 def edit_pet_profile_data(
     pet_id: int,
     data: PetProfileEditSchema,
@@ -101,18 +111,31 @@ def edit_pet_profile_data(
 
 
 
+@router.post("/pets/{pet_id}/image", response_model=MediaBaseShowSchema)
+async def add_pet_profile_image_data(
+    pet_id: int,
+    file: UploadFile = File(...),
+    session: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    uploaded_file = await add_pet_profile_image_service(session, file, pet_id)
+    return uploaded_file
+
+
+
 @router.get("/media/pet/{subcategory}/{filename}")
-def get_pet_image_data(subcategory: str, filename: str):
+def get_pet_profile_image_data(subcategory: str, filename: str):
     """Serve pet image from a subcategory like portrait/action."""
     if subcategory not in VALID_SUBCATEGORIES["pet"]:
         raise HTTPException(status_code=400, detail="Invalid pet image subcategory")
 
     file_path = os.path.join(get_upload_subpath("pet", subcategory), filename)
+    media_type, _ = mimetypes.guess_type(file_path)
 
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
 
-    return FileResponse(path=file_path, media_type="application/octet-stream")
+    return FileResponse(path=file_path, media_type=media_type or "application/octet-stream")
 
 
 

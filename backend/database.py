@@ -31,9 +31,7 @@ def get_db():
         db.close()
 
 
-# from flask_sqlalchemy import SQLAlchemy
-#
-# db = SQLAlchemy()
+
 
 
 

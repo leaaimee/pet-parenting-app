@@ -14,7 +14,7 @@ class Users(Base):
     pronouns = Column(String(50))
     email = Column(String(100), nullable=False, unique=True)
     password_hash = Column(String(200), nullable=False)
-    profile_picture = Column(String(300))
+    profile_image = Column(String(300))
     profile_description = Column(Text)
     created_at = Column(DateTime, default=func.now())
     phone = Column(String(20), nullable=True)
@@ -24,6 +24,8 @@ class Users(Base):
     experience_with = Column(Text)
     certifications = Column(Text)
     certification_files = Column(String(300))
+
+    public_fields: JSON = Column(JSON, default=[])
 
 
     def set_password(self, password):

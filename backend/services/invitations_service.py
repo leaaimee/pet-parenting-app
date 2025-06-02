@@ -3,7 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from backend.models.pets_models import Pets
 from backend.models.users_models import Roles
-from backend.utils.permissions import user_has_access
+
 from backend.utils.constants import Permission
 from backend.models.invitations_models import Invitations
 from backend.utils.constants import InvitationStatus
