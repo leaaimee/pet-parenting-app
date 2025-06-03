@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from fastapi.responses import FileResponse\
 
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from sqlalchemy.future import select
 
 from backend.models.users_models import Users
@@ -18,8 +19,11 @@ from backend.schemas.media_schema import MediaBaseShowSchema
 
 from backend.auth.jwt import get_current_user, create_access_token
 
+from backend.database import get_async_session
+
+
 from backend.models.media_models import UploadedFile
-from backend.database import get_db
+
 
 from backend.utils.upload_helper import get_upload_subpath, VALID_SUBCATEGORIES
 
@@ -34,7 +38,7 @@ router = APIRouter()
 @router.post("/", response_model=UserProfileSchema, status_code=201)
 async def register_user_data(
     user_data: UserCreateSchema,
-    session: AsyncSession = Depends(get_db)
+    session: AsyncSession = Depends(get_async_session)
 ):
     new_user = await register_user_service(user_data, session)
 
@@ -49,14 +53,14 @@ async def register_user_data(
 @router.get("/users/{user_id}", response_model=UserProfilePublicSchema)
 async def show_public_user_profile_data(
     user_id: int,
-    session: AsyncSession = Depends(get_db)
+    session: AsyncSession = Depends(get_async_session)
 ):
     return await show_user_profile_service(user_id, session, public=True)
 
 
 @router.get("/users/me", response_model=UserProfileShowSchema)
 async def show_private_user_profile_data(
-    session: AsyncSession = Depends(get_db),
+    session: AsyncSession = Depends(get_async_session),
     current_user: dict = Depends(get_current_user)
 ):
     return await show_user_profile_service(current_user["id"], session)
@@ -67,7 +71,7 @@ async def show_private_user_profile_data(
 async def edit_user_profile_data(
     user_id: int,
     user_data: UserProfileEditSchema,
-    session: AsyncSession = Depends(get_db),
+    session: AsyncSession = Depends(get_async_session),
     current_user: dict = Depends(get_current_user)
 ):
     if user_id != current_user["id"]:
@@ -81,7 +85,7 @@ async def edit_user_profile_data(
 @router.post("/login")
 async def login_user_data(
     user_data: UserLoginSchema,
-    session: AsyncSession = Depends(get_db)
+    session: AsyncSession = Depends(get_async_session)
 ):
     return await login_user_service(user_data, session)
 
@@ -91,7 +95,7 @@ async def login_user_data(
 async def add_user_profile_image_data(
     user_id: int,
     file: UploadFile = File(...),
-    session: AsyncSession = Depends(get_db),
+    session: AsyncSession = Depends(get_async_session),
     current_user: dict = Depends(get_current_user)
 ):
     """Add user profile image data"""

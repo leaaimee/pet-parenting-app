@@ -6,6 +6,8 @@ from sqlalchemy.sql import func
 from backend.utils.constants import RoleType, AccessLevel, InvitationStatus
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from sqlalchemy.dialects.postgresql import JSON
+
 
 class Users(Base):
     __tablename__ = "users"

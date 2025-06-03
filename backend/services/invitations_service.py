@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
 from backend.models.pets_models import Pets
 from backend.models.users_models import Roles
@@ -9,23 +11,23 @@ from backend.models.invitations_models import Invitations
 from backend.utils.constants import InvitationStatus
 
 
-from backend.database import SessionLocal
+
+
 
 import logging
 logger = logging.getLogger(__name__)
 
 
 
-def send_pet_invitation(
-    db: Session,  # ✅ Accept db session from outside
+async def send_pet_invitation_service(
+    session: AsyncSession,
     pet,
     inviter_id: int,
     invitee_id: int,
     role: str,
     access_level: str
-):
+) -> Invitations | None:
     """Create and store a pending pet invitation in the database"""
-
     try:
         new_invite = Invitations(
             pet_id=pet.id,
@@ -36,19 +38,20 @@ def send_pet_invitation(
             status=InvitationStatus.PENDING
         )
 
-        db.add(new_invite)         # ✅ SQLAlchemy-native add
-        db.commit()                # ✅ Explicit commit
-        db.refresh(new_invite)     # ✅ Optional: loads auto fields like ID
+        session.add(new_invite)
+        await session.commit()
+        await session.refresh(new_invite)
         return new_invite
 
     except Exception as e:
-        db.rollback()
+        await session.rollback()
         logger.error(f"Error creating invitation: {e}")
         return None
 
 
 
-def send_user_invitation(data, inviter_id, db: Session):
+
+async def send_user_invitation(data, inviter_id: int, session: AsyncSession):
     """Send a new invitation from one user to another"""
     new_invite = Invitations(
         pet_id=data.pet_id,
@@ -59,32 +62,38 @@ def send_user_invitation(data, inviter_id, db: Session):
         status=InvitationStatus.PENDING
     )
 
-    db.add(new_invite)
-    db.commit()
-    db.refresh(new_invite)
+    session.add(new_invite)
+    await session.commit()
+    await session.refresh(new_invite)
 
     return {"message": "Invitation sent!"}, 200
 
 
 
-def get_pending_invitations(user_id: int, db: Session):
+async def get_pending_invitations(user_id: int, session: AsyncSession):
     """Return all pending invitations for a given user"""
-
     try:
-        return db.query(Invitations).filter_by(
-            invitee_id=user_id,
-            status=InvitationStatus.PENDING
-        ).all()
+        result = await session.execute(
+            select(Invitations).where(
+                Invitations.invitee_id == user_id,
+                Invitations.status == InvitationStatus.PENDING
+            )
+        )
+        return result.scalars().all()
     except Exception as e:
         logger.error(f"Error fetching invitations: {e}")
         return []
 
 
 
-def accept_user_invitation(invitation_id, user_id, db: Session):
+
+async def accept_user_invitation(invitation_id: int, user_id: int, session: AsyncSession):
     """Accept an invitation and assign the invited role"""
 
-    invitation = db.query(Invitations).filter_by(id=invitation_id).first()
+    result = await session.execute(
+        select(Invitations).where(Invitations.id == invitation_id)
+    )
+    invitation = result.scalar_one_or_none()
 
     if not invitation:
         return {"error": "Invitation not found"}, 404
@@ -96,7 +105,7 @@ def accept_user_invitation(invitation_id, user_id, db: Session):
     role = invitation.role
     access_level = invitation.access_level
 
-    new_role = set_role(pet_id, user_id, role, access_level, invitation, db)
+    new_role = await set_role(pet_id, user_id, role, access_level, invitation, session)
 
     if not new_role:
         return {"error": "Failed to accept invitation."}, 500
@@ -105,10 +114,14 @@ def accept_user_invitation(invitation_id, user_id, db: Session):
 
 
 
-def decline_user_invitation(invitation_id, user_id, db: Session):
+
+async def decline_user_invitation(invitation_id: int, user_id: int, session: AsyncSession):
     """Decline an invitation and mark it as rejected"""
 
-    invitation = db.query(Invitations).filter_by(id=invitation_id).first()
+    result = await session.execute(
+        select(Invitations).where(Invitations.id == invitation_id)
+    )
+    invitation = result.scalar_one_or_none()
 
     if not invitation:
         return {"error": "Invitation not found"}, 404
@@ -117,12 +130,20 @@ def decline_user_invitation(invitation_id, user_id, db: Session):
         return {"error": "You are not authorized to decline this invitation"}, 403
 
     invitation.status = InvitationStatus.DECLINED
-    db.commit()
+    await session.commit()
     return {"message": "Invitation declined"}, 200
 
 
 
-def set_role(user_id, pet_id, role, access_level, invitation, db: Session):
+
+async def set_role(
+    user_id: int,
+    pet_id: int,
+    role: str,
+    access_level: str,
+    invitation: Invitations,
+    session: AsyncSession
+):
     """Assigns role & updates invitation status"""
     try:
         new_role = Roles(
@@ -132,14 +153,14 @@ def set_role(user_id, pet_id, role, access_level, invitation, db: Session):
             access_level=access_level,
         )
 
-        db.add(new_role)
+        session.add(new_role)
         invitation.status = InvitationStatus.ACCEPTED
 
-        db.commit()
-        db.refresh(new_role)  # Optional but safe
+        await session.commit()
+        await session.refresh(new_role)
         return new_role
 
     except SQLAlchemyError as e:
-        db.rollback()
+        await session.rollback()
         logger.error(f"Database error: {e}")
         return None

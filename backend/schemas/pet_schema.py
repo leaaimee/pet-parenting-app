@@ -1,8 +1,14 @@
+
+from __future__ import annotations
+
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Optional
 from datetime import date, datetime
 
 from backend.schemas.media_schema import MediaBaseShowSchema
+
+
+
 
 
 class PetBasicSchema(BaseModel):
@@ -13,8 +19,7 @@ class PetBasicSchema(BaseModel):
     gender: str | None = None
 
     class Config:
-        orm_mode = True
-
+        from_attributes = True
 
 
 class PetProfileShowSchema(BaseModel):
@@ -33,9 +38,9 @@ class PetProfileShowSchema(BaseModel):
     pet_data: Optional["PetDataShowSchema"]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
-PetProfileShowSchema.update_forward_refs()
+
 
 class PetProfileAddSchema(BaseModel):
     name: str
@@ -49,7 +54,8 @@ class PetProfileAddSchema(BaseModel):
     profile_description: str | None = None
 
     class Config:
-        orm_mode = True  # Still useful if using models
+        from_attributes = True
+# Still useful if using models
 
 
 class PetProfileEditSchema(BaseModel):
@@ -64,8 +70,7 @@ class PetProfileEditSchema(BaseModel):
     profile_description: str | None = None
 
     class Config:
-        orm_mode = True
-
+        from_attributes = True
 
 
 class PetDataShowSchema(BaseModel):
@@ -82,7 +87,7 @@ class PetDataShowSchema(BaseModel):
     additional_info: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PetDataAddSchema(BaseModel):
@@ -98,7 +103,7 @@ class PetDataAddSchema(BaseModel):
     additional_info: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PetDataEditSchema(BaseModel):
@@ -114,8 +119,7 @@ class PetDataEditSchema(BaseModel):
     additional_info: str | None = None
 
     class Config:
-        orm_mode = True
-
+        from_attributes = True
 
 
 class PetMedicalProfileShowSchema(BaseModel):
@@ -128,7 +132,7 @@ class PetMedicalProfileShowSchema(BaseModel):
     notes: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PetMedicalProfileAddSchema(BaseModel):
@@ -139,7 +143,7 @@ class PetMedicalProfileAddSchema(BaseModel):
     notes: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PetMedicalProfileEditSchema(BaseModel):
@@ -150,8 +154,7 @@ class PetMedicalProfileEditSchema(BaseModel):
     notes: str | None = None
 
     class Config:
-        orm_mode = True
-
+        from_attributes = True
 
 
 class PetVaccinationShowSchema(BaseModel):
@@ -166,7 +169,7 @@ class PetVaccinationShowSchema(BaseModel):
     additional_info: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PetVaccinationAddSchema(BaseModel):
@@ -178,7 +181,7 @@ class PetVaccinationAddSchema(BaseModel):
     additional_info: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PetVaccinationEditSchema(BaseModel):
@@ -190,7 +193,7 @@ class PetVaccinationEditSchema(BaseModel):
     additional_info: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PetMedicationShowSchema(BaseModel):
@@ -203,7 +206,7 @@ class PetMedicationShowSchema(BaseModel):
     additional_info: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PetMedicationAddSchema(BaseModel):
@@ -213,7 +216,7 @@ class PetMedicationAddSchema(BaseModel):
     additional_info: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PetMedicationEditSchema(BaseModel):
@@ -223,7 +226,7 @@ class PetMedicationEditSchema(BaseModel):
     additional_info: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PetTestResultShowSchema(BaseModel):
@@ -236,7 +239,7 @@ class PetTestResultShowSchema(BaseModel):
     additional_info: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PetTestResultAddSchema(BaseModel):
@@ -246,7 +249,7 @@ class PetTestResultAddSchema(BaseModel):
     additional_info: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PetTestResultEditSchema(BaseModel):
@@ -256,8 +259,7 @@ class PetTestResultEditSchema(BaseModel):
     additional_info: str | None = None
 
     class Config:
-        orm_mode = True
-
+        from_attributes = True
 
 
 class PetMedicalDocumentShowSchema(BaseModel):
@@ -271,30 +273,29 @@ class PetMedicalDocumentShowSchema(BaseModel):
     additional_info: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PetMedicalDocumentAddSchema(BaseModel):
+    medical_profile_id: int | None = None
     document_name: str | None = None
     document_type: str | None = None
     upload_date: date | None = None
-    file_path: str | None = None
     additional_info: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PetMedicalDocumentEditSchema(BaseModel):
+    medical_profile_id: int | None = None
     document_name: str | None = None
     document_type: str | None = None
     upload_date: date | None = None
-    file_path: str | None = None
     additional_info: str | None = None
 
     class Config:
-        orm_mode = True
-
+        from_attributes = True
 
 
 class PetVetVisitShowSchema(BaseModel):
@@ -308,7 +309,7 @@ class PetVetVisitShowSchema(BaseModel):
     documents: list[PetMedicalDocumentShowSchema] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PetVetVisitAddSchema(BaseModel):
@@ -320,7 +321,7 @@ class PetVetVisitAddSchema(BaseModel):
     documents: list[PetMedicalDocumentShowSchema] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PetVetVisitEditSchema(BaseModel):
@@ -332,6 +333,8 @@ class PetVetVisitEditSchema(BaseModel):
     documents: list[PetMedicalDocumentShowSchema] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
+
+PetProfileShowSchema.model_rebuild()
 

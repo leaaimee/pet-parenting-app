@@ -1,7 +1,6 @@
-from contextlib import contextmanager
-from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from contextlib import asynccontextmanager
 from sqlalchemy.orm import declarative_base
-from sqlalchemy.orm import sessionmaker
 
 from dotenv import load_dotenv
 
@@ -10,25 +9,55 @@ import os
 load_dotenv()
 
 
-# ✅ Load from .env or config
-DATABASE_URL = os.getenv("DATABASE_URL")
+# Pull your database URL from .env
+DATABASE_URL = os.getenv("DATABASE_URL").replace("postgresql://", "postgresql+asyncpg://")
 
-# ✅ Create engine (talks to the DB)
-engine = create_engine(DATABASE_URL)
+#  Create async engine
+engine = create_async_engine(DATABASE_URL, echo=True)
 
-# ✅ Create session factory (used for making db sessions)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# ✅ Base class for your models to inherit
+# Async session factory
+AsyncSessionLocal = async_sessionmaker(
+    bind=engine,
+    expire_on_commit=False,
+    class_=AsyncSession
+)
+
+# 🧪 Use in routes/services
+@asynccontextmanager
+async def get_async_session():
+    async with AsyncSessionLocal() as session:
+        yield session
+
+
+# Base class for your models to inherit
 Base = declarative_base()
 
-@contextmanager
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+
+
+
+# from contextlib import contextmanager
+# from sqlalchemy import create_engine
+# from sqlalchemy.orm import sessionmaker
+
+
+# Load from .env or config - sync flow
+# DATABASE_URL = os.getenv("DATABASE_URL")
+
+# Create engine - sync version
+# engine = create_engine(DATABASE_URL)
+
+# Create session factory (used for making db sessions)
+# SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# sync version
+# @contextmanager
+# def get_db():
+#     db = SessionLocal()
+#     try:
+#         yield db
+#     finally:
+#         db.close()
 
 
 

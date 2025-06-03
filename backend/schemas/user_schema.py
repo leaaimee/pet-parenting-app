@@ -1,9 +1,11 @@
 from datetime import datetime
 
 from pydantic import BaseModel, EmailStr
-from wtforms.validators import Optional
 
-from media_schema import MediaBaseShowSchema
+from typing import List, Optional
+
+from backend.schemas.media_schema import MediaBaseShowSchema
+
 
 
 class UserCreateSchema(BaseModel):
@@ -30,7 +32,22 @@ class UserProfileShowSchema(BaseModel):
     phone: str | None = None
     location: str | None = None
     birth_date: str | None = None
-    profile_image: [MediaBaseShowSchema] | None = None
+    profile_image: Optional[List[MediaBaseShowSchema]] = None
+    profile_description: str | None = None
+    languages_spoken: str | None = None
+    experience_with: str | None = None
+    certifications: str | None = None
+    created_at: datetime | None = None
+
+
+class UserProfileAddSchema(BaseModel):
+    name: str | None = None
+    pronouns: str | None = None
+    email: EmailStr | None = None
+    phone: str | None = None
+    location: str | None = None
+    birth_date: str | None = None
+    profile_image: Optional[List[MediaBaseShowSchema]] = None
     profile_description: str | None = None
     languages_spoken: str | None = None
     experience_with: str | None = None
@@ -45,7 +62,7 @@ class UserProfileEditSchema(BaseModel):
     phone: str | None = None
     location: str | None = None
     birth_date: str | None = None
-    profile_image: [MediaBaseShowSchema] | None = None
+    profile_image: Optional[List[MediaBaseShowSchema]] = None
     profile_description: str | None = None
     languages_spoken: str | None = None
     experience_with: str | None = None
