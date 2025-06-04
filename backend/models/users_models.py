@@ -11,24 +11,11 @@ from sqlalchemy.dialects.postgresql import JSON
 
 class Users(Base):
     __tablename__ = "users"
+
     id = Column(Integer, primary_key= True)
-    name = Column(String(100), nullable=False)
-    pronouns = Column(String(50))
     email = Column(String(100), nullable=False, unique=True)
     password_hash = Column(String(200), nullable=False)
-    profile_image = Column(String(300))
-    profile_description = Column(Text)
     created_at = Column(DateTime, default=func.now())
-    phone = Column(String(20), nullable=True)
-    location = Column(String(100))
-    birth_date = Column(Date)
-    languages_spoken = Column(String(100))
-    experience_with = Column(Text)
-    certifications = Column(Text)
-    certification_files = Column(String(300))
-
-    public_fields: JSON = Column(JSON, default=[])
-
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -36,13 +23,42 @@ class Users(Base):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+    profile = relationship("UserProfile", back_populates="account", uselist=False, cascade="all, delete-orphan")
+
     roles = relationship('Roles', back_populates='user', lazy=True)
     assigned_tasks = relationship('Tasks', backref='assigned_user', lazy=True)
     sitting_assignments = relationship('Sitters', back_populates='sitter', overlaps="sitters")
     pets = relationship("Pets", back_populates="parent")
 
 
+
+class UserProfile(Base):
+    __tablename__ = "user_profiles"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
+
+    name = Column(String(100), nullable=False)
+    pronouns = Column(String(50))
+    profile_image = Column(String(300))
+    profile_description = Column(Text)
+    phone = Column(String(20), nullable=True)
+    location = Column(String(100))
+
+    birth_date = Column(Date)
+    languages_spoken = Column(String(100))
+    experience_with = Column(Text)
+    certifications = Column(Text)
+    certification_files = Column(String(300))
+
+    account = relationship("Users", back_populates="profile")
+
+    public_fields: JSON = Column(JSON, default=[])
+
+
+
 class Roles(Base):
+
     __tablename__ = "roles"
     id = Column(Integer, primary_key=True)
     pet_id = Column(Integer, ForeignKey('pets.id'), nullable=False)
@@ -54,7 +70,9 @@ class Roles(Base):
     user = relationship('Users', back_populates='roles')
 
 
+
 class Sitters(Base):
+
     __tablename__ = "sitters"
     id = Column(Integer, primary_key=True)
     pet_id = Column(Integer, ForeignKey("pets.id"), nullable=False)

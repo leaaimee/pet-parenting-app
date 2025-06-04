@@ -10,10 +10,10 @@ from sqlalchemy.future import select
 
 from backend.models.users_models import Users
 
-from backend.services.users_service import register_user_service, show_user_profile_service, edit_user_profile_service
-from backend.services.users_service import add_user_profile_image_service, login_user_service, get_user_profile_image_service
+from backend.services.users_service import register_user_service, show_user_profile_service, add_user_profile_service, edit_user_profile_service
+from backend.services.users_service import add_user_profile_image_service, login_user_service, get_user_profile_image_service, edit_user_profile_image_service
 
-from backend.schemas.user_schema import UserProfileSchema, UserCreateSchema, UserLoginSchema, UserProfileEditSchema, UserProfileShowSchema, UserProfilePublicSchema
+from backend.schemas.user_schema import UserLoginSchema, UserProfileEditSchema, UserProfileShowSchema, UserAccountShowSchema, UserAccountCreateSchema
 from backend.schemas.user_schema import TokenRequest
 from backend.schemas.media_schema import MediaBaseShowSchema
 
@@ -35,27 +35,37 @@ router = APIRouter()
 
 
 
-@router.post("/", response_model=UserProfileSchema, status_code=201)
+@router.post("/", response_model=UserAccountShowSchema, status_code=201)
 async def register_user_data(
-    user_data: UserCreateSchema,
+    user_data: UserAccountCreateSchema,
     session: AsyncSession = Depends(get_async_session)
 ):
     new_user = await register_user_service(user_data, session)
 
     return {
-        "id": new_user.id,
-        "email": new_user.email,
-        "name": new_user.name
-    }
+    "id": new_user.id,
+    "email": new_user.email,
+    "created_at": new_user.created_at
+}
 
 
 
-@router.get("/users/{user_id}", response_model=UserProfilePublicSchema)
+@router.post("/login")
+async def login_user_data(
+    user_data: UserLoginSchema,
+    session: AsyncSession = Depends(get_async_session)
+):
+    return await login_user_service(user_data, session)
+
+
+
+@router.get("/users/{user_id}", response_model=UserProfileShowSchema)
 async def show_public_user_profile_data(
     user_id: int,
     session: AsyncSession = Depends(get_async_session)
 ):
     return await show_user_profile_service(user_id, session, public=True)
+
 
 
 @router.get("/users/me", response_model=UserProfileShowSchema)
@@ -64,6 +74,21 @@ async def show_private_user_profile_data(
     current_user: dict = Depends(get_current_user)
 ):
     return await show_user_profile_service(current_user["id"], session)
+
+
+
+@router.post("/users/{user_id}/profile", response_model=UserProfileShowSchema, status_code=201)
+async def add_user_profile_data(
+    user_id: int,
+    user_data: UserProfileEditSchema,
+    session: AsyncSession = Depends(get_async_session),
+    current_user: dict = Depends(get_current_user)
+):
+    if user_id != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Unauthorized to create profile")
+
+    new_profile = await add_user_profile_service(user_id, user_data, session)
+    return new_profile
 
 
 
@@ -79,15 +104,6 @@ async def edit_user_profile_data(
 
     updated_user = await edit_user_profile_service(user_id, user_data, session)
     return updated_user
-
-
-
-@router.post("/login")
-async def login_user_data(
-    user_data: UserLoginSchema,
-    session: AsyncSession = Depends(get_async_session)
-):
-    return await login_user_service(user_data, session)
 
 
 
@@ -108,6 +124,23 @@ async def add_user_profile_image_data(
 
 
 
+@router.put("/users/{user_id}/image", response_model=MediaBaseShowSchema)
+async def edit_user_profile_image_data(
+    user_id: int,
+    file: UploadFile = File(...),
+    session: AsyncSession = Depends(get_async_session),
+    current_user: dict = Depends(get_current_user)
+):
+    """Replace user profile image"""
+    if current_user["id"] != user_id:
+        raise HTTPException(status_code=403, detail="Access forbidden")
+
+    uploaded_file = await edit_user_profile_image_service(session, file, user_id)
+    return uploaded_file
+
+
+
+
 @router.get("/media/user/{subcategory}/{filename}")
 async def get_user_profile_image_data(
     subcategory: str,
@@ -117,8 +150,7 @@ async def get_user_profile_image_data(
 
 
 
-
-
+@router.delete("/user/me")
 
 @router.post("/token")
 def get_token(data: TokenRequest):

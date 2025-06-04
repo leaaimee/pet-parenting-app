@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import datetime, date
 
 from pydantic import BaseModel, EmailStr
+
 
 from typing import List, Optional
 
@@ -8,15 +9,18 @@ from backend.schemas.media_schema import MediaBaseShowSchema
 
 
 
-class UserCreateSchema(BaseModel):
+class UserAccountCreateSchema(BaseModel):
     email: EmailStr
     password: str
-    name: str
 
-class UserProfileSchema(BaseModel):
+
+class UserAccountShowSchema(BaseModel):
     id: int
     email: EmailStr
-    name: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
 
 
 class UserLoginSchema(BaseModel):
@@ -24,58 +28,77 @@ class UserLoginSchema(BaseModel):
     password: str
 
 
-class UserProfileShowSchema(BaseModel):
+class UserAccountPublicSchema(BaseModel):
     id: int
-    name: str | None = None
-    pronouns: str | None = None
-    email: EmailStr | None = None
-    phone: str | None = None
-    location: str | None = None
-    birth_date: str | None = None
-    profile_image: Optional[List[MediaBaseShowSchema]] = None
-    profile_description: str | None = None
-    languages_spoken: str | None = None
-    experience_with: str | None = None
-    certifications: str | None = None
-    created_at: datetime | None = None
+    email: EmailStr
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
 
 
 class UserProfileAddSchema(BaseModel):
-    name: str | None = None
+    name: str
     pronouns: str | None = None
-    email: EmailStr | None = None
     phone: str | None = None
     location: str | None = None
-    birth_date: str | None = None
-    profile_image: Optional[List[MediaBaseShowSchema]] = None
+    birth_date: date | None = None
+    profile_image: str | None = None
     profile_description: str | None = None
     languages_spoken: str | None = None
     experience_with: str | None = None
     certifications: str | None = None
-    created_at: datetime | None = None
+    certification_files: str | None = None
+    public_fields: list[str] | None = []
+
+    class Config:
+        from_attributes = True
 
 
 class UserProfileEditSchema(BaseModel):
     name: str | None = None
     pronouns: str | None = None
-    email: EmailStr | None = None
     phone: str | None = None
     location: str | None = None
-    birth_date: str | None = None
-    profile_image: Optional[List[MediaBaseShowSchema]] = None
+    birth_date: date | None = None
+    profile_image: str | None = None
     profile_description: str | None = None
     languages_spoken: str | None = None
     experience_with: str | None = None
     certifications: str | None = None
-    created_at: datetime | None = None
+    certification_files: str | None = None
+    public_fields: list[str] | None = []
+
+    class Config:
+        from_attributes = True
 
 
-class UserProfilePublicSchema(BaseModel):
+class UserProfileShowSchema(BaseModel):
     id: int
     name: str
+    pronouns: str | None = None
+    phone: str | None = None
+    location: str | None = None
+    birth_date: date | None = None
     profile_image: str | None = None
     profile_description: str | None = None
+    languages_spoken: str | None = None
+    experience_with: str | None = None
+    certifications: str | None = None
+    certification_files: str | None = None
+    public_fields: list[str] | None = []
+    created_at: datetime | None = None
+
+    class Config:
+        from_attributes = True
+
 
 
 class TokenRequest(BaseModel):
     username: str
+    password: str
+
+
+class TokenResponseSchema(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
