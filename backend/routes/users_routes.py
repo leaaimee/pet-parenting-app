@@ -147,6 +147,16 @@ async def get_user_profile_image_data(
 
 
 
+@router.delete("/user/me")
+async def delete_user_account_data(
+    session: AsyncSession = Depends(get_async_session),
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete user account if no pets and profile is empty or non-existent"""
+    return await delete_user_account_service(current_user["id"], session)
+
+
+
 @router.delete("/user/me/profile")
 async def delete_user_profile_data(
     session: AsyncSession = Depends(get_async_session),
@@ -154,16 +164,16 @@ async def delete_user_profile_data(
 ):
     """Delete user profile data"""
     return await delete_user_profile_service(current_user["id"], session)
-
-
-
-@router.delete("/user/me")
-async def delete_user_account_data(
-    session: AsyncSession = Depends(get_async_session),
-    current_user: dict = Depends(get_current_user)
-):
-    """Delete user account """
-    return await delete_user_account_service(current_user["id"], session)
+#
+#
+#
+# @router.delete("/user/me")
+# async def delete_user_account_data(
+#     session: AsyncSession = Depends(get_async_session),
+#     current_user: dict = Depends(get_current_user)
+# ):
+#     """Delete user account """
+#     return await delete_user_account_service(current_user["id"], session)
 
 
 

@@ -4,7 +4,7 @@ from fastapi import UploadFile, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.models.pets_models import MedicalProfile, VaccinationRecord, Medication, TestResult, VetVisit, \
+from backend.models.medical_models import MedicalProfile, VaccinationRecord, Medication, TestResult, VetVisit, \
     MedicalDocument
 from backend.schemas.medical_schema import PetMedicalProfileAddSchema, PetMedicalProfileEditSchema, \
     PetVaccinationAddSchema, PetVaccinationEditSchema, PetMedicationAddSchema, PetMedicationEditSchema, \

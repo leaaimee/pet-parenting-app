@@ -144,4 +144,22 @@ async def edit_pet_data(
 
 
 
+@router.delete("/pets/{pet_id}")
+async def delete_pet_profile_data(
+    pet_id: int,
+    session: AsyncSession = Depends(get_async_session),
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete a pet and all related data (only if profile & data are empty)"""
+    return await delete_pet_profile_service(pet_id, current_user["id"], session)
 
+
+
+@router.delete("/pets/{pet_id}/data")
+async def delete_pet_data(
+    pet_id: int,
+    session: AsyncSession = Depends(get_async_session),
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete pet data (emotional metadata, does not delete pet profile or medical info)"""
+    return await delete_pet_data_service(pet_id, current_user["id"], session)

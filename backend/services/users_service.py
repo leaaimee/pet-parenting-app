@@ -240,6 +240,72 @@ async def show_user_profile_service(user_id: int, session: AsyncSession, public:
 
 
 
+def is_user_profile_empty(profile: UserProfile) -> bool:
+    return all([
+        not profile.name,
+        not profile.pronouns,
+        not profile.profile_image,
+        not profile.profile_description,
+        not profile.phone,
+        not profile.location,
+        not profile.birth_date,
+        not profile.languages_spoken,
+        not profile.experience_with,
+        not profile.certifications,
+        not profile.certification_files
+    ])
+
+
+
+async def delete_user_account_service(user_id: int, session: AsyncSession):
+    try:
+        # Check if user exists
+        user_result = await session.execute(
+            select(Users).where(Users.id == user_id)
+        )
+        user = user_result.scalar_one_or_none()
+
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # Check for pets
+        pets_result = await session.execute(
+            select(Pets).where(Pets.parent_id == user_id)
+        )
+        pets = pets_result.scalars().all()
+
+        if pets:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot delete account: pet profiles still exist."
+            )
+
+        # Check user profile
+        profile_result = await session.execute(
+            select(UserProfile).where(UserProfile.user_id == user_id)
+        )
+        profile = profile_result.scalar_one_or_none()
+
+        if profile and not is_user_profile_empty(profile):
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot delete account: user profile still contains data."
+            )
+
+        # Proceed to delete user and optionally profile
+        if profile:
+            await session.delete(profile)
+        await session.delete(user)
+        await session.commit()
+
+        return {"detail": "User deleted successfully"}
+
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to delete user: {str(e)}")
+
+
+
 async def delete_user_profile_service(user_id: int, session: AsyncSession):
     try:
         result = await session.execute(
@@ -260,34 +326,34 @@ async def delete_user_profile_service(user_id: int, session: AsyncSession):
 
 
 
-async def delete_user_account_service(user_id: int, session: AsyncSession):
-    try:
-        # Check if user exists
-        user_result = await session.execute(
-            select(Users).where(Users.id == user_id)
-        )
-        user = user_result.scalar_one_or_none()
-
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-
-        # Check if profile still exists
-        profile_result = await session.execute(
-            select(UserProfile).where(UserProfile.user_id == user_id)
-        )
-        profile = profile_result.scalar_one_or_none()
-
-        if profile:
-            raise HTTPException(
-                status_code=400,
-                detail="Cannot delete account: profile still exists. Please delete it first."
-            )
-
-        # Proceed to delete user
-        await session.delete(user)
-        await session.commit()
-        return {"detail": "User deleted successfully"}
-
-    except Exception as e:
-        await session.rollback()
-        raise HTTPException(status_code=500, detail=f"Failed to delete user: {str(e)}")
+# async def delete_user_account_service(user_id: int, session: AsyncSession):
+#     try:
+#         # Check if user exists
+#         user_result = await session.execute(
+#             select(Users).where(Users.id == user_id)
+#         )
+#         user = user_result.scalar_one_or_none()
+#
+#         if not user:
+#             raise HTTPException(status_code=404, detail="User not found")
+#
+#         # Check if profile still exists
+#         profile_result = await session.execute(
+#             select(UserProfile).where(UserProfile.user_id == user_id)
+#         )
+#         profile = profile_result.scalar_one_or_none()
+#
+#         if profile:
+#             raise HTTPException(
+#                 status_code=400,
+#                 detail="Cannot delete account: profile still exists. Please delete it first."
+#             )
+#
+#         # Proceed to delete user
+#         await session.delete(user)
+#         await session.commit()
+#         return {"detail": "User deleted successfully"}
+#
+#     except Exception as e:
+#         await session.rollback()
+#         raise HTTPException(status_code=500, detail=f"Failed to delete user: {str(e)}")

@@ -1,4 +1,5 @@
-from fastapi import UploadFile
+from fastapi import UploadFile, HTTPException, File
+
 
 from datetime import datetime
 
@@ -7,6 +8,7 @@ from sqlalchemy.future import select
 from sqlalchemy.exc import SQLAlchemyError
 
 from backend.models.pets_models import Pets
+from backend.models.medical_models import MedicalProfile, VaccinationRecord, VetVisit, MedicalDocument
 from backend.models.users_models import Sitters
 from backend.models.media_models import UploadedFile
 
@@ -17,6 +19,8 @@ from backend.schemas.pet_schema import PetProfileAddSchema, PetDataAddSchema, Pe
 from backend.models.pets_models import PetData
 
 from backend.utils.pet_helpers import pet_birthday
+
+
 
 
 async def get_user_pets_service(user_id: int, session: AsyncSession):
@@ -218,3 +222,121 @@ async def edit_pet_data_service(
 
 
 
+def is_pet_data_empty(data: PetData) -> bool:
+    return all([
+        not data.favorite_things,
+        not data.dislikes,
+        not data.social_style,
+        not data.communication,
+        not data.preferred_treats,
+        not data.diet,
+        not data.allergies,
+        not data.medical_alerts,
+        not data.behavior_notes,
+        not data.additional_info
+    ])
+
+
+def is_pet_profile_empty(data: Pets) -> bool:
+    return all([
+        not data.birthday,
+        not data.birth_year,
+        not data.birth_month,
+        not data.subspecies,
+        not data.gender,
+        not data.profile_image_id,
+        not data.profile_description or data.profile_description.strip() == ""
+    ])
+
+
+
+async def delete_pet_profile_service(pet_id: int, user_id: int, session: AsyncSession):
+    try:
+        # Get pet
+        pet_result = await session.execute(
+            select(Pets).where(Pets.id == pet_id)
+        )
+        pet = pet_result.scalar_one_or_none()
+
+        if not pet:
+            raise HTTPException(status_code=404, detail="Pet not found")
+
+        if pet.parent_id != user_id:
+            raise HTTPException(status_code=403, detail="Not authorized to delete this pet")
+
+        # Check if pet data exists
+        data_result = await session.execute(
+            select(PetData).where(PetData.pet_id == pet_id)
+        )
+        pet_data = data_result.scalar_one_or_none()
+
+        if pet_data and not is_pet_data_empty(pet_data):
+            raise HTTPException(status_code=400, detail="Cannot delete pet — PetData is not empty")
+
+        # Check if pet profile has meaningful fields
+        if not is_pet_profile_empty(pet):
+            raise HTTPException(status_code=400, detail="Cannot delete pet — Profile still contains information")
+
+        # Auto-delete medical sub-records
+        for model in [VetVisit, VaccinationRecord, MedicalDocument]:
+            result = await session.execute(
+                select(model).where(model.pet_id == pet_id)
+            )
+            entries = result.scalars().all()
+            for entry in entries:
+                await session.delete(entry)
+
+        # Delete medical profile if exists
+        med_result = await session.execute(
+            select(MedicalProfile).where(MedicalProfile.pet_id == pet_id)
+        )
+        med_profile = med_result.scalar_one_or_none()
+        if med_profile:
+            await session.delete(med_profile)
+
+        # Delete PetData if exists
+        if pet_data:
+            await session.delete(pet_data)
+
+        # Delete Pet itself
+        await session.delete(pet)
+        await session.commit()
+
+        return {"detail": "Pet and related data deleted successfully"}
+
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to delete pet: {str(e)}")
+
+
+
+async def delete_pet_data_service(pet_id: int, user_id: int, session: AsyncSession):
+    try:
+        # Verify ownership
+        pet_result = await session.execute(
+            select(Pets).where(Pets.id == pet_id)
+        )
+        pet = pet_result.scalar_one_or_none()
+
+        if not pet:
+            raise HTTPException(status_code=404, detail="Pet not found")
+
+        if pet.parent_id != user_id:
+            raise HTTPException(status_code=403, detail="Not authorized to modify this pet")
+
+        # Get PetData
+        data_result = await session.execute(
+            select(PetData).where(PetData.pet_id == pet_id)
+        )
+        pet_data = data_result.scalar_one_or_none()
+
+        if not pet_data:
+            raise HTTPException(status_code=404, detail="Pet data not found")
+
+        await session.delete(pet_data)
+        await session.commit()
+        return {"detail": "Pet data deleted successfully"}
+
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to delete pet data: {str(e)}")
