@@ -12,6 +12,7 @@ from backend.models.users_models import Users
 
 from backend.services.users_service import register_user_service, show_user_profile_service, add_user_profile_service, edit_user_profile_service
 from backend.services.users_service import add_user_profile_image_service, login_user_service, get_user_profile_image_service, edit_user_profile_image_service
+from backend.services.users_service import delete_user_profile_service, delete_user_account_service
 
 from backend.schemas.user_schema import UserLoginSchema, UserProfileEditSchema, UserProfileShowSchema, UserAccountShowSchema, UserAccountCreateSchema
 from backend.schemas.user_schema import TokenRequest
@@ -77,37 +78,35 @@ async def show_private_user_profile_data(
 
 
 
-@router.post("/users/{user_id}/profile", response_model=UserProfileShowSchema, status_code=201)
+@router.post("/users/me", response_model=UserProfileShowSchema, status_code=201)
 async def add_user_profile_data(
     user_id: int,
     user_data: UserProfileEditSchema,
     session: AsyncSession = Depends(get_async_session),
     current_user: dict = Depends(get_current_user)
 ):
-    if user_id != current_user["id"]:
-        raise HTTPException(status_code=403, detail="Unauthorized to create profile")
+    user_id = current_user["id"]
 
     new_profile = await add_user_profile_service(user_id, user_data, session)
     return new_profile
 
 
 
-@router.put("/users/{user_id}/profile", response_model=UserProfileShowSchema)
+@router.put("/users/me", response_model=UserProfileShowSchema)
 async def edit_user_profile_data(
     user_id: int,
     user_data: UserProfileEditSchema,
     session: AsyncSession = Depends(get_async_session),
     current_user: dict = Depends(get_current_user)
 ):
-    if user_id != current_user["id"]:
-        raise HTTPException(status_code=403, detail="Unauthorized to edit this profile")
+    user_id = current_user["id"]
 
     updated_user = await edit_user_profile_service(user_id, user_data, session)
     return updated_user
 
 
 
-@router.post("/users/{user_id}/image", response_model=MediaBaseShowSchema)
+@router.post("/users/me", response_model=MediaBaseShowSchema)
 async def add_user_profile_image_data(
     user_id: int,
     file: UploadFile = File(...),
@@ -116,15 +115,14 @@ async def add_user_profile_image_data(
 ):
     """Add user profile image data"""
 
-    if current_user["id"] != user_id:
-        raise HTTPException(status_code=403, detail="Access forbidden")
+    user_id = current_user["id"]
 
     uploaded_file = await add_user_profile_image_service(session, file, user_id)
     return uploaded_file
 
 
 
-@router.put("/users/{user_id}/image", response_model=MediaBaseShowSchema)
+@router.put("/users/me", response_model=MediaBaseShowSchema)
 async def edit_user_profile_image_data(
     user_id: int,
     file: UploadFile = File(...),
@@ -132,12 +130,10 @@ async def edit_user_profile_image_data(
     current_user: dict = Depends(get_current_user)
 ):
     """Replace user profile image"""
-    if current_user["id"] != user_id:
-        raise HTTPException(status_code=403, detail="Access forbidden")
+    user_id = current_user["id"]
 
     uploaded_file = await edit_user_profile_image_service(session, file, user_id)
     return uploaded_file
-
 
 
 
@@ -150,7 +146,30 @@ async def get_user_profile_image_data(
 
 
 
+
+@router.delete("/user/me/profile")
+async def delete_user_profile_data(
+    session: AsyncSession = Depends(get_async_session),
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete user profile data"""
+    return await delete_user_profile_service(current_user["id"], session)
+
+
+
 @router.delete("/user/me")
+async def delete_user_account_data(
+    session: AsyncSession = Depends(get_async_session),
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete user account """
+    return await delete_user_account_service(current_user["id"], session)
+
+
+
+
+
+
 
 @router.post("/token")
 def get_token(data: TokenRequest):

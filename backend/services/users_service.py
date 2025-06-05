@@ -15,7 +15,7 @@ from passlib.hash import bcrypt
 
 from backend.utils.upload_helper import get_upload_subpath, VALID_SUBCATEGORIES
 
-from backend.models.users_models import Users
+from backend.models.users_models import Users, UserProfile
 
 from backend.schemas.user_schema import UserCreateSchema, UserProfileEditSchema, UserLoginSchema
 
@@ -240,3 +240,54 @@ async def show_user_profile_service(user_id: int, session: AsyncSession, public:
 
 
 
+async def delete_user_profile_service(user_id: int, session: AsyncSession):
+    try:
+        result = await session.execute(
+            select(UserProfile).where(UserProfile.user_id == user_id)
+        )
+        profile = result.scalar_one_or_none()
+
+        if not profile:
+            raise HTTPException(status_code=404, detail="User profile not found")
+
+        await session.delete(profile)
+        await session.commit()
+        return {"detail": "User profile deleted successfully"}
+
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to delete profile: {str(e)}")
+
+
+
+async def delete_user_account_service(user_id: int, session: AsyncSession):
+    try:
+        # Check if user exists
+        user_result = await session.execute(
+            select(Users).where(Users.id == user_id)
+        )
+        user = user_result.scalar_one_or_none()
+
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # Check if profile still exists
+        profile_result = await session.execute(
+            select(UserProfile).where(UserProfile.user_id == user_id)
+        )
+        profile = profile_result.scalar_one_or_none()
+
+        if profile:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot delete account: profile still exists. Please delete it first."
+            )
+
+        # Proceed to delete user
+        await session.delete(user)
+        await session.commit()
+        return {"detail": "User deleted successfully"}
+
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to delete user: {str(e)}")

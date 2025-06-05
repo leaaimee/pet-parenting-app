@@ -15,6 +15,7 @@ class InvitationStatus(enum.Enum):
     ACCEPTED = "accepted"
     DECLINED = "DECLINED"
 
+# TODO enums -> Pydantic models
 
 class Permission(enum.Enum):
     VIEW_PET_PROFILE = "view_pet_profile"
