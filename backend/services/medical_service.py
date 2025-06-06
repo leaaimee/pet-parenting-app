@@ -15,7 +15,7 @@ from backend.services.pets_service import verify_pet_access
 from backend.utils.upload_helper import save_uploaded_file
 
 
-async def get_medical_profile_data_service(pet_id: int, user_id: int, session: AsyncSession):
+async def get_medical_profile_service(pet_id: int, user_id: int, session: AsyncSession):
     pet = await verify_pet_access(pet_id, user_id, session)
     if not pet:
         return None
@@ -26,7 +26,7 @@ async def get_medical_profile_data_service(pet_id: int, user_id: int, session: A
     return result.scalar_one_or_none()
 
 
-def prepare_medical_profile_data_service(
+def prepare_medical_profile_service(
     data: PetMedicalProfileAddSchema,
     pet_id: int
 ) -> dict:
@@ -41,7 +41,7 @@ def prepare_medical_profile_data_service(
     }
 
 
-async def add_medical_profile_data_service(data: dict, session: AsyncSession):
+async def add_medical_profile_service(data: dict, session: AsyncSession):
     new_medical_profile = MedicalProfile(**data)
     session.add(new_medical_profile)
     await session.commit()
@@ -49,11 +49,11 @@ async def add_medical_profile_data_service(data: dict, session: AsyncSession):
     return new_medical_profile
 
 
-async def edit_medical_profile_data_service(
-    session: AsyncSession,
+async def edit_medical_profile_service(
     pet_id: int,
     user_id: int,
-    data: PetMedicalProfileEditSchema
+    data: PetMedicalProfileEditSchema,
+    session: AsyncSession
 ):
     pet = await verify_pet_access(pet_id, user_id, session)
     if not pet:

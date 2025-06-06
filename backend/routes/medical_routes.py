@@ -3,17 +3,20 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, Form, File
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.auth.jwt import get_current_user
 from backend.database import get_async_session
-from backend.routes.pets_routes import router
+
+from backend.auth.auth import get_current_user
+
+
+
 from backend.schemas.medical_schema import PetMedicalProfileShowSchema, PetMedicalProfileAddSchema, \
     PetMedicalProfileEditSchema, PetVaccinationShowSchema, PetVaccinationAddSchema, PetVaccinationEditSchema, \
     PetMedicationShowSchema, PetMedicationAddSchema, PetMedicationEditSchema, PetTestResultShowSchema, \
     PetTestResultAddSchema, PetTestResultEditSchema, PetMedicalDocumentShowSchema, PetMedicalDocumentAddSchema, \
     PetMedicalDocumentEditSchema, PetVetVisitShowSchema, PetVetVisitAddSchema, PetVetVisitEditSchema
 from backend.services.pets_service import get_pet_by_id, verify_pet_access
-from backend.services.medical_service import get_medical_profile_data_service, prepare_medical_profile_data_service, \
-    add_medical_profile_data_service, edit_medical_profile_data_service, add_vaccination_data_service, \
+from backend.services.medical_service import get_medical_profile_service, prepare_medical_profile_service, \
+    add_medical_profile_service, edit_medical_profile_service, add_vaccination_data_service, \
     edit_vaccination_data_service, add_medication_data_service, edit_medication_data_service, \
     add_test_result_data_service, edit_test_result_data_service, add_vet_visit_data_service, \
     edit_vet_visit_data_service, add_medical_document_service, edit_medical_document_service
@@ -29,7 +32,7 @@ async def get_medical_profile_data(
     """Get medical profile for a specific pet"""
     pet = await get_pet_by_id(pet_id, session)
 
-    medical_profile = await get_medical_profile_data_service(pet_id, current_user["id"], session)
+    medical_profile = await get_medical_profile_service(pet_id, current_user["id"], session)
 
     if not medical_profile:
         raise HTTPException(status_code=404, detail="Medical profile not found")
@@ -50,8 +53,8 @@ async def add_medical_profile_data(
     if not pet:
         raise HTTPException(status_code=404, detail="Pet not found or unauthorized")
 
-    data = await prepare_medical_profile_data_service(medical_data, pet_id, current_user["id"], session)
-    new_medical_data = await add_medical_profile_data_service(data, session)
+    data = prepare_medical_profile_service(medical_data, pet_id)
+    new_medical_data = await add_medical_profile_service(data, session)
 
     if not new_medical_data:
         raise HTTPException(status_code=500, detail="Medical profile creation failed")
@@ -67,12 +70,15 @@ async def edit_medical_profile_data(
     current_user: dict = Depends(get_current_user)
 ):
     """Edit existing medical profile for a specific pet"""
-    updated_medical_profile = await edit_medical_profile_data_service(pet_id, current_user["id"], medical_data, session)
+    updated_medical_profile = await edit_medical_profile_service(
+        pet_id, current_user["id"], medical_data, session
+    )
 
     if not updated_medical_profile:
         raise HTTPException(status_code=404, detail="Medical profile not found or unauthorized")
 
     return updated_medical_profile
+
 
 
 @router.post("/pets/{pet_id}/medical_data/vaccinations", response_model=PetVaccinationShowSchema)

@@ -1,4 +1,4 @@
-from fastapi import UploadFile, HTTPException, File
+from fastapi import UploadFile, HTTPException
 
 
 from datetime import datetime

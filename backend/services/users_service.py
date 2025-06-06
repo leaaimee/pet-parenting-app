@@ -9,15 +9,15 @@ from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from starlette.datastructures import UploadFile
-from unicodedata import category
-from werkzeug.security import generate_password_hash
+
 from passlib.hash import bcrypt
 
 from backend.utils.upload_helper import get_upload_subpath, VALID_SUBCATEGORIES
 
 from backend.models.users_models import Users, UserProfile
+from backend.models.pets_models import Pets
 
-from backend.schemas.user_schema import UserCreateSchema, UserProfileEditSchema, UserLoginSchema
+from backend.schemas.user_schema import UserAccountCreateSchema, UserProfileEditSchema, UserLoginSchema
 
 from backend.utils.upload_helper import save_uploaded_file
 
@@ -25,7 +25,7 @@ from backend.models.media_models import UploadedFile
 
 
 
-async def register_user_service(user_data: UserCreateSchema, session: AsyncSession):
+async def register_user_service(user_data: UserAccountCreateSchema, session: AsyncSession):
     try:
         # Check if user already exists
         result = await session.execute(

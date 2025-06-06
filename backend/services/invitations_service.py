@@ -1,12 +1,9 @@
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from backend.models.pets_models import Pets
 from backend.models.users_models import Roles
 
-from backend.utils.constants import Permission
 from backend.models.invitations_models import Invitations
 from backend.utils.constants import InvitationStatus
 

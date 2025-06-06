@@ -1,7 +1,5 @@
 from starlette.responses import JSONResponse
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-
 
 from backend.schemas.invitations_schema import InvitationRequestSchema
 from backend.services.invitations_service import send_user_invitation, accept_user_invitation, \

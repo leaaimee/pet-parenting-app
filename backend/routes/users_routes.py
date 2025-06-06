@@ -1,14 +1,7 @@
-import mimetypes
-import os
 
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
-from fastapi.responses import FileResponse\
 
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from sqlalchemy.future import select
-
-from backend.models.users_models import Users
 
 from backend.services.users_service import register_user_service, show_user_profile_service, add_user_profile_service, edit_user_profile_service
 from backend.services.users_service import add_user_profile_image_service, login_user_service, get_user_profile_image_service, edit_user_profile_image_service
@@ -18,21 +11,22 @@ from backend.schemas.user_schema import UserLoginSchema, UserProfileEditSchema, 
 from backend.schemas.user_schema import TokenRequest
 from backend.schemas.media_schema import MediaBaseShowSchema
 
-from backend.auth.jwt import get_current_user, create_access_token
+from backend.auth.jwt import create_access_token
 
 from backend.database import get_async_session
 
+from backend.auth.auth import get_current_user
 
-from backend.models.media_models import UploadedFile
 
-
-from backend.utils.upload_helper import get_upload_subpath, VALID_SUBCATEGORIES
-
-from werkzeug.security import check_password_hash
 
 
 
 router = APIRouter()
+
+@router.get("/protected-test")
+async def protected_test(current_user: dict = Depends(get_current_user)):
+    return {"message": "You're in!", "user": current_user}
+
 
 
 
