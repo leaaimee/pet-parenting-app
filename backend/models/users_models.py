@@ -26,7 +26,7 @@ class Users(Base):
     profile = relationship("UserProfile", back_populates="account", uselist=False, cascade="all, delete-orphan")
 
     roles = relationship('Roles', back_populates='user', lazy=True)
-    assigned_tasks = relationship('Tasks', backref='assigned_user', lazy=True)
+    # assigned_tasks = relationship('Tasks', backref='assigned_user', lazy=True)
     sitting_assignments = relationship('Sitters', back_populates='sitter', overlaps="sitters")
     pets = relationship("Pets", back_populates="parent")
 
