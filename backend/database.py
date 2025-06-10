@@ -1,5 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from contextlib import asynccontextmanager
+from typing import AsyncGenerator
+
 from sqlalchemy.orm import declarative_base
 
 from dotenv import load_dotenv
@@ -24,11 +26,14 @@ AsyncSessionLocal = async_sessionmaker(
 )
 
 # 🧪 Use in routes/services
-@asynccontextmanager
-async def get_async_session():
+# go
+# async def get_async_session():
+#     async with AsyncSessionLocal() as session:
+#         yield session
+
+async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as session:
         yield session
-
 
 # Base class for your models to inherit
 Base = declarative_base()
