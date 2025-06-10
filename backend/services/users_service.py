@@ -27,34 +27,35 @@ from backend.models.media_models import UploadedFile
 
 async def register_user_service(user_data: UserAccountCreateSchema, session: AsyncSession):
     try:
-        # Check if user already exists
-        result = await session.execute(
-            select(Users).where(Users.email == user_data.email)
-        )
-        if result.scalar_one_or_none():
-            raise HTTPException(status_code=400, detail="Email already registered")
+        async with session.begin():
+            # Check if user already exists
+            result = await session.execute(
+                select(Users).where(Users.email == user_data.email)
+            )
+            if result.scalar_one_or_none():
+                raise HTTPException(status_code=400, detail="Email already registered")
 
-        hashed_password = bcrypt.hash(user_data.password)
+            hashed_password = bcrypt.hash(user_data.password)
 
-        new_user = Users(
-            email=user_data.email,
-            password_hash=hashed_password
-        )
-        session.add(new_user)
-        await session.flush()  # gives us new_user.id without full commit
+            new_user = Users(
+                email=user_data.email,
+                password_hash=hashed_password
+            )
+            session.add(new_user)
+            await session.flush()  # gives us new_user.id without full commit
 
-        # Optional: create an empty profile during registration
-        # new_profile = UserProfile(
-        #     user_id=new_user.id,
-        #     name="",
-        #     public_fields=[],
-        # )
-        # session.add(new_profile)
+            # Optional: create an empty profile during registration
+            # new_profile = UserProfile(
+            #     user_id=new_user.id,
+            #     name="",
+            #     public_fields=[],
+            # )
+            # session.add(new_profile)
 
-        await session.commit()
-        await session.refresh(new_user)
+            await session.commit()
+            await session.refresh(new_user)
 
-        return new_user
+            return new_user
 
     except Exception as e:
         await session.rollback()
