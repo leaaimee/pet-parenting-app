@@ -7,7 +7,6 @@ from backend.routes.pets_routes import router as pets_router
 from backend.routes.invitations_routes import router as invitations_router
 
 
-from backend.services.users_service import create_fake_user
 
 
 
@@ -28,25 +27,25 @@ async def root_check():
 
 # try 2 - skip it all
 
-# from fastapi.openapi.utils import get_openapi
-#
-# def custom_openapi():
-#     if app.openapi_schema:
-#         return app.openapi_schema
-#     schema = get_openapi(
-#         title="Your API",
-#         version="1.0.0",
-#         description="...",
-#         routes=app.routes,
-#     )
-#     schema["components"]["securitySchemes"] = {
-#         "FakeAuth": {"type": "http", "scheme": "bearer"}
-#     }
-#     schema["security"] = [{"FakeAuth": []}]
-#     app.openapi_schema = schema
-#     return app.openapi_schema
-#
-# app.openapi = custom_openapi
+from fastapi.openapi.utils import get_openapi
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    schema = get_openapi(
+        title="Your API",
+        version="1.0.0",
+        description="...",
+        routes=app.routes,
+    )
+    schema["components"]["securitySchemes"] = {
+        "FakeAuth": {"type": "http", "scheme": "bearer"}
+    }
+    schema["security"] = [{"FakeAuth": []}]
+    app.openapi_schema = schema
+    return app.openapi_schema
+
+app.openapi = custom_openapi
 
 
 
