@@ -25,6 +25,7 @@ class Users(Base):
 
     profile = relationship("UserProfile", back_populates="account", uselist=False, cascade="all, delete-orphan")
 
+    uploaded_files = relationship("UploadedFile", back_populates="user", lazy="selectin")
     roles = relationship('Roles', back_populates='user', lazy=True)
     # assigned_tasks = relationship('Tasks', backref='assigned_user', lazy=True)
     sitting_assignments = relationship('Sitters', back_populates='sitter', overlaps="sitters")
