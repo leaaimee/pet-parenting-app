@@ -25,5 +25,15 @@ class UploadedFile(Base):
     uploaded_at = Column(DateTime, default=datetime.utcnow)
     is_active = Column(Boolean, default=True)
 
-    pet = relationship("Pets", back_populates="uploaded_files", lazy="selectin")
-    user = relationship("Users", back_populates="uploaded_files", lazy="selectin")
+    pet = relationship(
+        "Pets",
+        back_populates="uploaded_files",
+        foreign_keys=[pet_id],
+        lazy="selectin"
+    )
+    user = relationship(
+        "Users",
+        back_populates="uploaded_files",
+        foreign_keys=[user_id],
+        lazy="selectin"
+    )
