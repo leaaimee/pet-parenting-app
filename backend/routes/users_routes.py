@@ -101,7 +101,7 @@ async def edit_user_profile_data(
 
 
 
-@router.post("/users/me", response_model=MediaBaseShowSchema)
+@router.post("/users/me/image", response_model=MediaBaseShowSchema)
 async def add_user_profile_image_data(
     user_id: int,
     file: UploadFile = File(...),
@@ -117,7 +117,7 @@ async def add_user_profile_image_data(
 
 
 
-@router.put("/users/me", response_model=MediaBaseShowSchema)
+@router.put("/users/me/image", response_model=MediaBaseShowSchema)
 async def edit_user_profile_image_data(
     user_id: int,
     file: UploadFile = File(...),
