@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
+from backend.database import engine, Base
 
 from backend.routes.users_routes import router as users_router
 from backend.routes.pets_routes import router as pets_router
@@ -7,6 +9,15 @@ from backend.routes.invitations_routes import router as invitations_router
 
 
 app = FastAPI()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+
+
 
 
 @app.get("/")
