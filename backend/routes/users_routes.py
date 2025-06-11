@@ -11,7 +11,7 @@ from backend.schemas.user_schema import UserLoginSchema, UserProfileEditSchema, 
 from backend.schemas.user_schema import TokenRequest
 from backend.schemas.media_schema import MediaBaseShowSchema
 
-from backend.auth.jwt import create_access_token
+from greyzone.jwt import create_access_token
 
 from backend.database import get_async_session
 

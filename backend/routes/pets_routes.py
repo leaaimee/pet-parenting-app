@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse
 
 from backend.database import get_async_session
 
-from backend.auth.jwt import get_current_user
+from greyzone.jwt import get_current_user
 # from backend.database import get_db
 
 from backend.schemas.media_schema import MediaBaseShowSchema
