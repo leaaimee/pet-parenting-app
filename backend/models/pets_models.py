@@ -26,7 +26,15 @@ class Pets(Base):
     parent_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     parent = relationship("Users", back_populates="pets")
 
-    uploaded_files = relationship("UploadedFile", back_populates="pet")
+    # uploaded_files = relationship("UploadedFile", back_populates="pet")
+    uploaded_files = relationship(
+        "UploadedFile",
+        back_populates="pet",
+        foreign_keys="UploadedFile.pet_id"
+    )
+
+
+
     roles = relationship('Roles', back_populates='pet', lazy=True)
     pet_data = relationship('PetData', backref='pet', lazy=True)
     medical_profile = relationship("MedicalProfile", back_populates="pet", lazy=True)
