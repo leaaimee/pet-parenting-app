@@ -18,10 +18,10 @@ from fastapi.security import OAuth2PasswordBearer
 
 
 # try 1 - fake it till you make it
-# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-#
-# async def get_current_user(token: str = Depends(oauth2_scheme)):
-#     return {"id": 0, "email": "ellen.ripley@weyland.com"}
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    return {"id": 0, "email": "ellen.ripley@weyland.com"}
 
 
 
