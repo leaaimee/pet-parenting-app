@@ -45,6 +45,9 @@ async def register_user_service(user_data: UserAccountCreateSchema, session: Asy
         await session.refresh(new_user)
         return new_user
 
+    except HTTPException as http_exc:
+        raise http_exc
+
     except Exception as e:
         await session.rollback()
         raise HTTPException(status_code=500, detail=f"User creation failed: {str(e)}")
