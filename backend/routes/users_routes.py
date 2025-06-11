@@ -11,7 +11,7 @@ from backend.schemas.user_schema import UserLoginSchema, UserProfileEditSchema, 
 from backend.schemas.user_schema import TokenRequest
 from backend.schemas.media_schema import MediaBaseShowSchema
 
-# from greyzone.jwt import create_access_token
+from backend.auth.auth import get_current_user
 
 from backend.database import get_async_session
 
@@ -172,31 +172,6 @@ async def delete_user_profile_data(
 
 
 
-# @router.post("/token")
-# def get_token(data: TokenRequest):
-#     """Generate access token for given username (no password validation here)"""
-#     if not data.username.strip():
-#         raise HTTPException(status_code=400, detail="Missing username")
-#
-#     token = create_access_token({"sub": data.username})
-#     return {
-#         "access_token": token,
-#         "token_type": "bearer"
-#     }
-#
-#
-#
-# @router.get("/whoami")
-# def whoami(current_user: dict = Depends(get_current_user)):
-#     """Simple identity check for current user"""
-#     return {"message": f"Hello, {current_user['username']}"}
-#
-#
-#
-# @router.get("/protected")
-# def protected_route(current_user: dict = Depends(get_current_user)):
-#     """Example of a protected route that requires valid token"""
-#     return {"message": f"Hello, {current_user['username']}. You're in a secure zone."}
 
 
 

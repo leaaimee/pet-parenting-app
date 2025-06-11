@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends
 from backend.schemas.invitations_schema import InvitationRequestSchema
 from backend.services.invitations_service import send_user_invitation, accept_user_invitation, \
     decline_user_invitation, get_pending_invitations
-from greyzone.jwt import get_current_user
 
+from backend.auth.auth import get_current_user
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.database import get_async_session
 
