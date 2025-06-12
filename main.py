@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.openapi.utils import get_openapi
 from contextlib import asynccontextmanager
 from backend.database import engine, Base
 
@@ -25,24 +26,28 @@ async def root_check():
 
 
 
-# try 2 - skip it all
-
-from fastapi.openapi.utils import get_openapi
 
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
-    schema = get_openapi(
-        title="Your API",
+
+    openapi_schema = get_openapi(
+        title="Pet Parenting API",
         version="1.0.0",
-        description="...",
+        description="API documentation for the Pet Parenting project with Auth0 security.",
         routes=app.routes,
     )
-    schema["components"]["securitySchemes"] = {
-        "FakeAuth": {"type": "http", "scheme": "bearer"}
+
+    openapi_schema["components"]["securitySchemes"] = {
+        "BearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+            "description": "Enter your Auth0 JWT. Format: Bearer <token>"
+        }
     }
-    schema["security"] = [{"FakeAuth": []}]
-    app.openapi_schema = schema
+    openapi_schema["security"] = [{"BearerAuth": []}]
+    app.openapi_schema = openapi_schema
     return app.openapi_schema
 
 app.openapi = custom_openapi
