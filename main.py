@@ -8,6 +8,7 @@ from backend.routes.users_routes import router as users_router
 from backend.routes.pets_routes import router as pets_router
 from backend.routes.invitations_routes import router as invitations_router
 
+from backend.auth.auth import AUTH0_DOMAIN
 
 AUTH0_CLIENT_ID = os.getenv("AUTH0_CLIENT_ID")
 
@@ -46,26 +47,36 @@ def custom_openapi():
     openapi_schema = get_openapi(
         title="Pet Parenting API",
         version="1.0.0",
-        description="API documentation for the Pet Parenting project with Auth0 security.",
+        description="API documentation for the Pet Parenting project with Auth0 login.",
         routes=app.routes,
     )
 
     openapi_schema["components"]["securitySchemes"] = {
         "BearerAuth": {
-            "type": "http",
-            "scheme": "bearer",
-            "bearerFormat": "JWT",
-            "description": "Enter your Auth0 JWT. Format: Bearer <token>"
+            "type": "oauth2",
+            "flows": {
+                "authorizationCode": {
+                    "authorizationUrl": f"https://{AUTH0_DOMAIN}/authorize",
+                    "tokenUrl": f"https://{AUTH0_DOMAIN}/oauth/token",
+                    "scopes": {
+                        "openid": "OpenID Connect scope",
+                        "profile": "Profile scope",
+                        "email": "Email scope"
+                    }
+                }
+            }
         }
     }
-    openapi_schema["security"] = [{"BearerAuth": []}]
+
+    openapi_schema["security"] = [{"BearerAuth": ["openid", "profile", "email"]}]
 
     for path in openapi_schema["paths"].values():
         for method in path.values():
-            method.setdefault("security", [{"BearerAuth": []}])
+            method.setdefault("security", [{"BearerAuth": ["openid", "profile", "email"]}])
 
     app.openapi_schema = openapi_schema
     return app.openapi_schema
+
 
 app.openapi = custom_openapi
 
