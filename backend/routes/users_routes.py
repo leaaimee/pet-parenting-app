@@ -89,7 +89,6 @@ async def add_user_profile_data(
 
 @router.put("/users/me", response_model=UserProfileShowSchema)
 async def edit_user_profile_data(
-    user_id: int,
     user_data: UserProfileEditSchema,
     session: AsyncSession = Depends(get_async_session),
     current_user: dict = Depends(get_current_user)

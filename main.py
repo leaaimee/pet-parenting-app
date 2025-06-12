@@ -47,6 +47,11 @@ def custom_openapi():
         }
     }
     openapi_schema["security"] = [{"BearerAuth": []}]
+
+    for path in openapi_schema["paths"].values():
+        for method in path.values():
+            method.setdefault("security", [{"BearerAuth": []}])
+
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
