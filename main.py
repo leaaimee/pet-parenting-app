@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+import os
 from fastapi.openapi.utils import get_openapi
 from contextlib import asynccontextmanager
 from backend.database import engine, Base
@@ -8,7 +9,7 @@ from backend.routes.pets_routes import router as pets_router
 from backend.routes.invitations_routes import router as invitations_router
 
 
-
+AUTH0_CLIENT_ID = os.getenv("AUTH0_CLIENT_ID")
 
 
 @asynccontextmanager
@@ -17,7 +18,18 @@ async def lifespan(app: FastAPI):
         await conn.run_sync(Base.metadata.create_all)
     yield
 
-app = FastAPI(lifespan=lifespan)
+# app = FastAPI(lifespan=lifespan)
+
+
+app = FastAPI(
+    lifespan=lifespan,
+    swagger_ui_init_oauth={
+        "clientId": AUTH0_CLIENT_ID,
+        "appName": "Pet Parenting App",
+        "scopes": "openid profile email",
+        "usePkceWithAuthorizationCodeGrant": True,
+    },
+)
 
 
 @app.get("/")

@@ -49,6 +49,8 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(h
         print("🔑 Step 4: Matching RSA key found.")
 
         # Step 5: Decode token
+        print("🎯 Step 5: Using audience =", API_AUDIENCE)
+        print("🎯 Step 5: Using issuer =", f"https://{AUTH0_DOMAIN}/")
         payload = jwt.decode(
             token,
             rsa_key,
