@@ -31,8 +31,10 @@ app = FastAPI(
         "appName": "Pet Parenting App",
         "scopes": "openid profile email",
         "usePkceWithAuthorizationCodeGrant": True,
-        "audience": "https://pet-parenting-api",  # ✅ hardcoded for certainty
-    },
+        "extraQueryParams": {
+            "audience": "https://pet-parenting-api"
+        }
+    }
 )
 
 # app = FastAPI(
