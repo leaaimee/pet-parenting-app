@@ -22,6 +22,8 @@ async def lifespan(app: FastAPI):
 # app = FastAPI(lifespan=lifespan)
 
 
+
+
 app = FastAPI(
     lifespan=lifespan,
     swagger_ui_init_oauth={
@@ -29,8 +31,19 @@ app = FastAPI(
         "appName": "Pet Parenting App",
         "scopes": "openid profile email",
         "usePkceWithAuthorizationCodeGrant": True,
+        "audience": "https://pet-parenting-api",  # ✅ hardcoded for certainty
     },
 )
+
+# app = FastAPI(
+#     lifespan=lifespan,
+#     swagger_ui_init_oauth={
+#         "clientId": AUTH0_CLIENT_ID,
+#         "appName": "Pet Parenting App",
+#         "scopes": "openid profile email",
+#         "usePkceWithAuthorizationCodeGrant": True,
+#     },
+# )
 
 
 @app.get("/")
