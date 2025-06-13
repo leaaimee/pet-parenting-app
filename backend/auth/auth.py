@@ -51,6 +51,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(h
         # Step 5: Decode token
         print("🎯 Step 5: Using audience =", API_AUDIENCE)
         print("🎯 Step 5: Using issuer =", f"https://{AUTH0_DOMAIN}/")
+        print("🔬 JWT claims (unverified):", jwt.get_unverified_claims(token))
         payload = jwt.decode(
             token,
             rsa_key,
