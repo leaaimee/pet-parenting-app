@@ -47,6 +47,7 @@ app = FastAPI(
 #     },
 # )
 
+print("🧪 Swagger audience patch is ACTIVE")  # 👈 Add here
 
 @app.get("/")
 async def root_check():
