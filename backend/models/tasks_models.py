@@ -1,6 +1,6 @@
 from backend.database import Base
-from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey, relationship
-from backend.models.users_models import Users
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
 
 
 class Tasks(Base):
