@@ -1,6 +1,6 @@
 from datetime import datetime, date
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 
 
 from typing import List, Optional
@@ -89,8 +89,11 @@ class UserProfileShowSchema(BaseModel):
     public_fields: list[str] | None = []
     created_at: datetime | None = None
 
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(from_attributes=True)
+
+    #class Config:
+    #    from_attributes = True
 
 
 
@@ -102,3 +105,13 @@ class TokenRequest(BaseModel):
 class TokenResponseSchema(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+## Charles
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: str | None = None

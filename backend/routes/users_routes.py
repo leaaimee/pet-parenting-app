@@ -1,8 +1,11 @@
+from email.policy import default
 
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
+from pycparser.ply.yacc import resultlimit
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.auth.auth2 import get_user
 from backend.services.users_service import register_user_service, show_user_profile_service, add_user_profile_service, edit_user_profile_service
 from backend.services.users_service import add_user_profile_image_service, login_user_service, get_user_profile_image_service, edit_user_profile_image_service
 from backend.services.users_service import delete_user_profile_service, delete_user_account_service
@@ -22,6 +25,12 @@ from backend.auth.auth import get_current_user
 
 
 router = APIRouter()
+
+
+#@router.get("/demo_user", response_model=UserProfileShowSchema)
+#async def demo_user(session: AsyncSession = Depends(get_async_session)):
+#    result = await get_user("first_user@example.com", session=session)
+#    return result
 
 @router.get("/protected-test")
 async def protected_test(current_user: dict = Depends(get_current_user)):

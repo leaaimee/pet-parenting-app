@@ -1,104 +1,65 @@
-from fastapi import FastAPI
-import os
-from fastapi.openapi.utils import get_openapi
-from contextlib import asynccontextmanager
-from backend.database import engine, Base
+from email.policy import default
 
-from backend.routes.users_routes import router as users_router
-from backend.routes.pets_routes import router as pets_router
-from backend.routes.invitations_routes import router as invitations_router
+from fastapi import FastAPI, Depends
+from pycparser.ply.yacc import resultlimit
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.auth.auth import AUTH0_DOMAIN
-
-AUTH0_CLIENT_ID = os.getenv("AUTH0_CLIENT_ID")
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    yield
-
-# app = FastAPI(lifespan=lifespan)
+from backend.auth.auth2 import get_user
+from backend.database import get_async_session
+from backend.schemas.user_schema import UserProfileShowSchema
+from backend.services.helpers.general_helpers import apply_updates
 
 
 
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 
-app = FastAPI(
-    lifespan=lifespan,
-    swagger_ui_init_oauth={
-        "clientId": AUTH0_CLIENT_ID,
-        "appName": "Pet Parenting App",
-        "scopes": "openid profile email",
-        "usePkceWithAuthorizationCodeGrant": True,
-        "extraQueryParams": {
-            "audience": "https://pet-parenting-api"
-        }
-    }
-)
 
-# app = FastAPI(
-#     lifespan=lifespan,
-#     swagger_ui_init_oauth={
-#         "clientId": AUTH0_CLIENT_ID,
-#         "appName": "Pet Parenting App",
-#         "scopes": "openid profile email",
-#         "usePkceWithAuthorizationCodeGrant": True,
-#     },
-# )
+from backend.auth.auth2 import authenticate_user, create_access_token
 
-print("🧪 Swagger audience patch is ACTIVE")  # 👈 Add here
 
-@app.get("/")
-async def root_check():
-    return {"message": "Pet Parenting API is live"}
+from datetime import timedelta
+
+
+app = FastAPI()
+
+
+
+# @app.get("/get")
+# async def hello():
+#     return "Hello world"
+#
+#
+# @app.get("/demo", response_model=UserProfileShowSchema)
+# async def demo(session: AsyncSession = Depends(get_async_session)):
+#     result = await get_user(email="leaaimee2010@gmail.com", session=session)
+#     return result
 
 
 
 
-def custom_openapi():
-    if app.openapi_schema:
-        return app.openapi_schema
+ACCESS_TOKEN_EXPIRE_MINUTES = 30  # optionally remove if already in auth2.py
 
-    openapi_schema = get_openapi(
-        title="Pet Parenting API",
-        version="1.0.0",
-        description="API documentation for the Pet Parenting project with Auth0 login.",
-        routes=app.routes,
+@app.post("/token")
+async def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    session: AsyncSession = Depends(get_async_session)
+):
+    user = await authenticate_user(form_data.username, form_data.password, session)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password"
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    token = create_access_token(
+        data={"sub": user.email},
+        expires_delta=access_token_expires
     )
-
-    openapi_schema["components"]["securitySchemes"] = {
-        "BearerAuth": {
-            "type": "oauth2",
-            "flows": {
-                "authorizationCode": {
-                    "authorizationUrl": f"https://{AUTH0_DOMAIN}/authorize",
-                    "tokenUrl": f"https://{AUTH0_DOMAIN}/oauth/token",
-                    "scopes": {
-                        "openid": "OpenID Connect scope",
-                        "profile": "Profile scope",
-                        "email": "Email scope"
-                    }
-                }
-            }
-        }
-    }
-
-    openapi_schema["security"] = [{"BearerAuth": ["openid", "profile", "email"]}]
-
-    for path in openapi_schema["paths"].values():
-        for method in path.values():
-            method.setdefault("security", [{"BearerAuth": ["openid", "profile", "email"]}])
-
-    app.openapi_schema = openapi_schema
-    return app.openapi_schema
-
-
-app.openapi = custom_openapi
+    return {"access_token": token, "token_type": "bearer"}
 
 
 
-app.include_router(users_router, prefix="/api/v2/users", tags=["Users v2"])
-app.include_router(pets_router, prefix="/api/v2/pets", tags=["Pets"])
-app.include_router(invitations_router, prefix="/api/v2/invitations", tags=["Invitations"])
-
+@app.get("/users/me")
+async def read_users_me(current_user: dict = Depends(get_current_user)):
+    return current_user
