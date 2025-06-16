@@ -8,6 +8,8 @@ from backend.auth.auth2 import get_user
 from backend.database import get_async_session
 from backend.schemas.user_schema import UserProfileShowSchema
 from backend.services.helpers.general_helpers import apply_updates
+from backend.auth.auth2 import get_current_user
+
 
 
 
