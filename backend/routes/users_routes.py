@@ -40,6 +40,8 @@ async def protected_test(current_user: dict = Depends(get_current_user)):
 
 
 
+
+
 @router.post("/", response_model=UserAccountShowSchema, status_code=201)
 async def register_user_data(
     user_data: UserAccountCreateSchema,

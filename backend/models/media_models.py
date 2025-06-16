@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from backend.database import Base
 
+
 class UploadedFile(Base):
     __tablename__ = "uploaded_files"
 

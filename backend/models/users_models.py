@@ -9,6 +9,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.dialects.postgresql import JSON
 
 
+
+
 class Users(Base):
     __tablename__ = "users"
 
@@ -23,13 +25,13 @@ class Users(Base):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    profile = relationship("UserProfile", back_populates="account", uselist=False, cascade="all, delete-orphan")
+    #profile = relationship("UserProfile", back_populates="account", uselist=False, cascade="all, delete-orphan")
 
     uploaded_files = relationship("UploadedFile", back_populates="user", lazy="selectin")
-    roles = relationship('Roles', back_populates='user', lazy=True)
+    #roles = relationship('Roles', back_populates='user', lazy=True)
     # assigned_tasks = relationship('Tasks', backref='assigned_user', lazy=True)
-    sitting_assignments = relationship('Sitters', back_populates='sitter', overlaps="sitters")
-    pets = relationship("Pets", back_populates="parent")
+    #sitting_assignments = relationship('Sitters', back_populates='sitter', overlaps="sitters")
+    #pets = relationship("Pets", back_populates="parent")
 
 
 
@@ -52,7 +54,7 @@ class UserProfile(Base):
     certifications = Column(Text)
     certification_files = Column(String(300))
 
-    account = relationship("Users", back_populates="profile")
+    #account = relationship("Users", back_populates="profile")
 
     public_fields: JSON = Column(JSON, default=[])
 
@@ -67,8 +69,8 @@ class Roles(Base):
     role = Column(Enum(RoleType), nullable=False)
     access_level = Column(Enum(AccessLevel), nullable=False, default=AccessLevel.VIEW_ALL)
 
-    pet = relationship('Pets', back_populates='roles')
-    user = relationship('Users', back_populates='roles')
+    #pet = relationship('Pets', back_populates='roles')
+    #user = relationship('Users', back_populates='roles')
 
 
 
@@ -84,7 +86,7 @@ class Sitters(Base):
     completed = Column(Boolean, default=False)
     access_level = Column(Enum(AccessLevel), nullable=False, default=AccessLevel.VIEW_LIMITED)
 
-    pet = relationship('Pets', backref='sitter_assignments')
-    sitter = relationship('Users', back_populates='sitting_assignments')
+    #pet = relationship('Pets', backref='sitter_assignments')
+    #sitter = relationship('Users', back_populates='sitting_assignments')
 
 

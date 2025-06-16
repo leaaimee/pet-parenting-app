@@ -8,6 +8,13 @@ from typing import List, Optional
 from backend.schemas.media_schema import MediaBaseShowSchema
 
 
+class UserPublic(BaseModel):
+    email: EmailStr
+    id: int
+    password_hash: str
+    class Config:
+        from_attributes = True
+
 
 class UserAccountCreateSchema(BaseModel):
     email: EmailStr

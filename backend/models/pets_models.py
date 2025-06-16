@@ -24,22 +24,22 @@ class Pets(Base):
     created_at = Column(DateTime, default=func.now())
 
     parent_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    parent = relationship("Users", back_populates="pets")
+    #parent = relationship("Users", back_populates="pets")
 
     # uploaded_files = relationship("UploadedFile", back_populates="pet")
     uploaded_files = relationship(
         "UploadedFile",
-        back_populates="pet",
+        #back_populates="pet",
         foreign_keys="UploadedFile.pet_id"
     )
 
 
 
-    roles = relationship('Roles', back_populates='pet', lazy=True)
+    #roles = relationship('Roles', back_populates='pet', lazy=True)
     pet_data = relationship('PetData', backref='pet', lazy=True)
-    medical_profile = relationship("MedicalProfile", back_populates="pet", lazy=True)
+    #medical_profile = relationship("MedicalProfile", back_populates="pet", lazy=True)
     # tasks = relationship('Tasks', backref='pet', lazy=True)
-    sitters = relationship('Sitters', back_populates='pet', lazy=True)
+    #sitters = relationship('Sitters', back_populates='pet', lazy=True)
 
 
 class PetData(Base):

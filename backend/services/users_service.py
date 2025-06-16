@@ -12,6 +12,7 @@ from starlette.datastructures import UploadFile
 
 from passlib.hash import bcrypt
 
+from backend.auth.auth2 import get_password_hash
 from backend.utils.upload_helper import get_upload_subpath, VALID_SUBCATEGORIES
 
 from backend.models.users_models import Users, UserProfile
@@ -33,7 +34,8 @@ async def register_user_service(user_data: UserAccountCreateSchema, session: Asy
         if result.scalar_one_or_none():
             raise HTTPException(status_code=400, detail="Email already registered")
 
-        hashed_password = bcrypt.hash(user_data.password)
+        #hashed_password = bcrypt.hash(user_data.password)
+        hashed_password = get_password_hash(user_data.password)
 
         new_user = Users(
             email=user_data.email,
