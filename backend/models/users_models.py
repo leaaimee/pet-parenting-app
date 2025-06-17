@@ -27,6 +27,8 @@ class Users(Base):
 
     #profile = relationship("UserProfile", back_populates="account", uselist=False, cascade="all, delete-orphan")
 
+    profile = relationship("UserProfile", back_populates="account", uselist=False, cascade="all, delete-orphan")
+
     uploaded_files = relationship("UploadedFile", back_populates="user", lazy="selectin")
     #roles = relationship('Roles', back_populates='user', lazy=True)
     # assigned_tasks = relationship('Tasks', backref='assigned_user', lazy=True)
@@ -54,6 +56,7 @@ class UserProfile(Base):
     certifications = Column(Text)
     certification_files = Column(String(300))
 
+    account = relationship("Users", back_populates="profile")
     #account = relationship("Users", back_populates="profile")
 
     public_fields: JSON = Column(JSON, default=[])

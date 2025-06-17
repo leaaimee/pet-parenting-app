@@ -18,7 +18,7 @@ VALID_UPLOAD_CATEGORIES = {
 
 VALID_SUBCATEGORIES = {
     "medical": ["xray", "bloodwork", "lab", "prescription", "misc"],
-    "pet": ["portrait", "action"],
+    "pet": ["portrait", "action", "profile_picture"],
     "user": ["profile_pic"]
 }
 

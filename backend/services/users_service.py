@@ -6,7 +6,9 @@ from fastapi import HTTPException
 from datetime import datetime
 
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette import status
 
 from starlette.datastructures import UploadFile
 
@@ -14,47 +16,94 @@ from passlib.hash import bcrypt
 
 from backend.auth.auth2 import get_password_hash
 from backend.utils.upload_helper import get_upload_subpath, VALID_SUBCATEGORIES
-
 from backend.models.users_models import Users, UserProfile
 from backend.models.pets_models import Pets
-
-from backend.schemas.user_schema import UserAccountCreateSchema, UserProfileEditSchema, UserLoginSchema
-
-from backend.utils.upload_helper import save_uploaded_file
-
 from backend.models.media_models import UploadedFile
+from backend.schemas.user_schema import UserAccountCreateSchema, UserProfileEditSchema, UserLoginSchema, \
+    UserProfileShowSchema
+from backend.utils.upload_helper import save_uploaded_file
+from backend.auth.auth2 import create_access_token
 
 
 
-async def register_user_service(user_data: UserAccountCreateSchema, session: AsyncSession):
+# async def register_user_service(user_data: UserAccountCreateSchema, session: AsyncSession):
+#     try:
+#         result = await session.execute(
+#             select(Users).where(Users.email == user_data.email)
+#         )
+#         if result.scalar_one_or_none():
+#             raise HTTPException(status_code=400, detail="Email already registered")
+#
+#         #hashed_password = bcrypt.hash(user_data.password)
+#         hashed_password = get_password_hash(user_data.password)
+#
+#         new_user = Users(
+#             email=user_data.email,
+#             password_hash=hashed_password
+#         )
+#         session.add(new_user)
+#         await session.flush()
+#         await session.commit()
+#         await session.refresh(new_user)
+#         return new_user
+#
+#     except HTTPException as http_exc:
+#         raise http_exc
+#
+#     except Exception as e:
+#         await session.rollback()
+#         raise HTTPException(status_code=500, detail=f"User creation failed: {str(e)}")
+
+
+# create data content version
+async def register_user_service(
+    user_data: UserAccountCreateSchema,
+    session: AsyncSession
+):
     try:
+        # 1. Check for existing email
         result = await session.execute(
             select(Users).where(Users.email == user_data.email)
         )
         if result.scalar_one_or_none():
             raise HTTPException(status_code=400, detail="Email already registered")
 
-        #hashed_password = bcrypt.hash(user_data.password)
+        # 2. Create the Users row
         hashed_password = get_password_hash(user_data.password)
-
         new_user = Users(
             email=user_data.email,
             password_hash=hashed_password
         )
         session.add(new_user)
+
+        # 3. Flush so new_user.id is populated
         await session.flush()
+
+        # 4. Auto-create an (initially minimal) UserProfile
+        #    UserProfile.name is non-nullable, so we give it a placeholder
+        profile = UserProfile(
+            user_id=new_user.id,
+            name=user_data.email.split("@")[0]  # e.g. "jane.doe" from "jane.doe@example.com"
+        )
+        session.add(profile)
+
+        # 5. Commit both the user and profile in one go
         await session.commit()
+
+        # 6. Refresh to pull back any defaults
         await session.refresh(new_user)
         return new_user
 
-    except HTTPException as http_exc:
-        raise http_exc
-
+    except HTTPException:
+        # propagate known HTTP errors (e.g. duplicate email)
+        raise
     except Exception as e:
+        # rollback on unexpected failures
         await session.rollback()
-        raise HTTPException(status_code=500, detail=f"User creation failed: {str(e)}")
-
-
+        raise HTTPException(
+            status_code=500,
+            detail=f"User creation failed: {str(e)}"
+        )
 
 
 
@@ -68,7 +117,9 @@ async def login_user_service(user_data: UserLoginSchema, session: AsyncSession):
     if not user or not bcrypt.verify(user_data.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    return {"access_token": "FAKE-TOKEN-FOR-NOW", "token_type": "bearer"}
+    token = create_access_token({"sub": str(user.id)})
+    return {"access_token": token, "token_type": "bearer"}
+
 
 
 
@@ -161,31 +212,61 @@ async def edit_user_profile_image_service(
 
 
 
+# async def add_user_profile_service(
+#     user_id: int,
+#     user_data: UserProfileEditSchema,
+#     session: AsyncSession
+# ):
+#     try:
+#         # Check if profile already exists
+#         result = await session.execute(
+#             select(UserProfile).where(UserProfile.user_id == user_id)
+#         )
+#         if result.scalar_one_or_none():
+#             raise HTTPException(status_code=400, detail="Profile already exists")
+#
+#         new_profile = UserProfile(
+#             user_id=user_id,
+#             **user_data.dict(exclude_unset=True)
+#         )
+#         session.add(new_profile)
+#         await session.commit()
+#         await session.refresh(new_profile)
+#         return new_profile
+#
+#     except Exception as e:
+#         await session.rollback()
+#         raise HTTPException(status_code=500, detail=f"Failed to create profile: {str(e)}")
+
+
+# chat 04 mini approach
 async def add_user_profile_service(
     user_id: int,
-    user_data: UserProfileEditSchema,
-    session: AsyncSession
-):
-    try:
-        # Check if profile already exists
-        result = await session.execute(
-            select(UserProfile).where(UserProfile.user_id == user_id)
-        )
-        if result.scalar_one_or_none():
-            raise HTTPException(status_code=400, detail="Profile already exists")
+    data: UserProfileEditSchema,
+    session: AsyncSession,
+) -> UserProfileShowSchema:
+    # 1. Try to load existing profile
+    result = await session.execute(
+        select(UserProfile).where(UserProfile.user_id == user_id)
+    )
+    profile = result.scalar_one_or_none()
 
-        new_profile = UserProfile(
-            user_id=user_id,
-            **user_data.dict(exclude_unset=True)
-        )
-        session.add(new_profile)
-        await session.commit()
-        await session.refresh(new_profile)
-        return new_profile
+    # 2. Create or update
+    if profile is None:
+        profile = UserProfile(user_id=user_id, **data.dict())
+        session.add(profile)
+        status_code = status.HTTP_201_CREATED
+    else:
+        for field, value in data.dict(exclude_unset=True).items():
+            setattr(profile, field, value)
+        status_code = status.HTTP_200_OK
 
-    except Exception as e:
-        await session.rollback()
-        raise HTTPException(status_code=500, detail=f"Failed to create profile: {str(e)}")
+    # 3. Commit & refresh
+    await session.commit()
+    await session.refresh(profile)
+
+    # 4. Return schema
+    return UserProfileShowSchema.from_orm(profile)
 
 
 
@@ -216,23 +297,55 @@ async def edit_user_profile_service(
 
 
 
+# async def show_user_profile_service(user_id: int, session: AsyncSession, public: bool = False):
+#     try:
+#         result = await session.execute(select(Users).where(Users.id == user_id))
+#         user = result.scalar_one_or_none()
+#
+#         if not user:
+#             raise HTTPException(status_code=404, detail="User not found")
+#
+#         if public:
+#             visible_fields = user.public_fields or []
+#             return {field: getattr(user, field, None) for field in visible_fields}
+#
+#         return user  # full object for private use
+#
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"Error fetching user: {str(e)}")
+
 async def show_user_profile_service(user_id: int, session: AsyncSession, public: bool = False):
     try:
-        result = await session.execute(select(Users).where(Users.id == user_id))
+        result = await session.execute(
+            select(Users).where(Users.id == user_id).options(selectinload(Users.profile))
+        )
         user = result.scalar_one_or_none()
 
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+        if not user or not user.profile:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User or profile not found"
+            )
+
+        profile = user.profile
 
         if public:
-            visible_fields = user.public_fields or []
-            return {field: getattr(user, field, None) for field in visible_fields}
+            public_data = {field: getattr(profile, field, None) for field in user.public_fields or []}
+            # Ensure required schema fields are always populated:
+            public_data.setdefault('id', profile.id)
+            public_data.setdefault('name', profile.name)
+            return UserProfileShowSchema(**public_data)
 
-        return user  # full object for private use
+        # For private view, return the complete schema from ORM object
+        return UserProfileShowSchema.from_orm(profile)
 
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching user: {str(e)}")
-
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Internal error: {str(e)}"
+        )
 
 
 def is_user_profile_empty(profile: UserProfile) -> bool:

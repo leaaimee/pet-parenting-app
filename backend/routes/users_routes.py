@@ -4,7 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from pycparser.ply.yacc import resultlimit
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.functions import user
+from starlette import status
 
+from backend.models.users_models import Users
 from backend.auth.auth2 import get_user
 from backend.services.users_service import register_user_service, show_user_profile_service, add_user_profile_service, edit_user_profile_service
 from backend.services.users_service import add_user_profile_image_service, login_user_service, get_user_profile_image_service, edit_user_profile_image_service
@@ -18,7 +21,7 @@ from backend.auth.auth import get_current_user
 
 from backend.database import get_async_session
 
-from backend.auth.auth import get_current_user
+from backend.auth.auth2 import get_current_user
 
 
 
@@ -65,6 +68,35 @@ async def login_user_data(
     return await login_user_service(user_data, session)
 
 
+# @router.get("/users/me", response_model=UserProfileShowSchema)
+# async def show_private_user_profile_data(
+#     session: AsyncSession = Depends(get_async_session),
+#     current_user: Users = Depends(get_current_user)
+# ):
+#     return await show_user_profile_service(current_user.id, session)
+
+# @router.get("/users/me", response_model=UserProfileShowSchema)
+# async def show_private_user_profile_data(
+#     session: AsyncSession = Depends(get_async_session),
+#     current_user: Users = Depends(get_current_user)
+# ):
+#     return await user.profile
+
+# chat 04-mini
+@router.get("/users/me", response_model=UserProfileShowSchema)
+async def show_private_user_profile_data(
+    session: AsyncSession = Depends(get_async_session),
+    current_user: Users = Depends(get_current_user),
+):
+    # Option A: call your existing service
+    profile_schema = await show_user_profile_service(
+        user_id=current_user.id,
+        session=session,
+        public=False,
+    )
+    return profile_schema
+
+
 
 @router.get("/users/{user_id}", response_model=UserProfileShowSchema)
 async def show_public_user_profile_data(
@@ -74,40 +106,63 @@ async def show_public_user_profile_data(
     return await show_user_profile_service(user_id, session, public=True)
 
 
+# @router.post("/users/me", response_model=UserProfileShowSchema, status_code=201)
+# async def add_user_profile_data(
+#     user_id: int,
+#     user_data: UserProfileEditSchema,
+#     session: AsyncSession = Depends(get_async_session),
+#     current_user: dict = Depends(get_current_user)
+# ):
+#     user_id = current_user["id"]
+#
+#     new_profile = await add_user_profile_service(user_id, user_data, session)
+#     return new_profile
 
-@router.get("/users/me", response_model=UserProfileShowSchema)
-async def show_private_user_profile_data(
-    session: AsyncSession = Depends(get_async_session),
-    current_user: dict = Depends(get_current_user)
-):
-    return await show_user_profile_service(current_user["id"], session)
-
-
-
-@router.post("/users/me", response_model=UserProfileShowSchema, status_code=201)
+# chat 04 mini approach .. they rock
+@router.post(
+    "/users/me",
+    response_model=UserProfileShowSchema,
+    status_code=status.HTTP_200_OK,  # use 200 for upserts
+)
 async def add_user_profile_data(
-    user_id: int,
     user_data: UserProfileEditSchema,
     session: AsyncSession = Depends(get_async_session),
-    current_user: dict = Depends(get_current_user)
+    current_user: Users = Depends(get_current_user),
 ):
-    user_id = current_user["id"]
+    # Derive the user_id from the authenticated user
+    profile = await add_user_profile_service(
+        user_id=current_user.id,
+        data=user_data,
+        session=session,
+    )
+    return profile
 
-    new_profile = await add_user_profile_service(user_id, user_data, session)
-    return new_profile
 
+# @router.put("/users/me", response_model=UserProfileShowSchema)
+# async def edit_user_profile_data(
+#     user_data: UserProfileEditSchema,
+#     session: AsyncSession = Depends(get_async_session),
+#     current_user: dict = Depends(get_current_user)
+# ):
+#     user_id = current_user["id"]
+#
+#     updated_user = await edit_user_profile_service(user_id, user_data, session)
+#     return updated_user
 
-
-@router.put("/users/me", response_model=UserProfileShowSchema)
+# chat 04 mini ..
+@router.patch("/users/me", response_model=UserProfileShowSchema)
 async def edit_user_profile_data(
     user_data: UserProfileEditSchema,
     session: AsyncSession = Depends(get_async_session),
-    current_user: dict = Depends(get_current_user)
+    current_user: Users = Depends(get_current_user),
 ):
-    user_id = current_user["id"]
+    updated_profile = await edit_user_profile_service(
+        user_id=current_user.id,
+        user_data=user_data,
+        session=session,
+    )
+    return updated_profile
 
-    updated_user = await edit_user_profile_service(user_id, user_data, session)
-    return updated_user
 
 
 
@@ -169,16 +224,6 @@ async def delete_user_profile_data(
 ):
     """Delete user profile data"""
     return await delete_user_profile_service(current_user["id"], session)
-#
-#
-#
-# @router.delete("/user/me")
-# async def delete_user_account_data(
-#     session: AsyncSession = Depends(get_async_session),
-#     current_user: dict = Depends(get_current_user)
-# ):
-#     """Delete user account """
-#     return await delete_user_account_service(current_user["id"], session)
 
 
 

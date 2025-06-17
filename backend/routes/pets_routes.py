@@ -4,11 +4,14 @@ import mimetypes
 from fastapi import APIRouter, Depends, File
 
 from fastapi.responses import FileResponse
+from starlette import status
 
 from backend.database import get_async_session
 
-from backend.auth.auth import get_current_user
+from backend.auth.auth2 import get_current_user
 # from backend.database import get_db
+
+from backend.models.users_models import Users
 
 from backend.schemas.media_schema import MediaBaseShowSchema
 
@@ -49,51 +52,161 @@ async def get_pet_profile_data(
     return pet
 
 
+@router.get("/pets/{pet_id}/profile", response_model=PetProfileShowSchema)
+async def show_pet_profile_data(
+    pet_id: int,
+    session: AsyncSession = Depends(get_async_session),
+):
+    pet = await show_pet_profile_service(pet_id, session)
+    if not pet:
+        raise HTTPException(404, "Pet not found")
+    return pet
 
-@router.post("/pets", response_model=PetProfileShowSchema)
+
+# @router.post("/pets", response_model=PetProfileShowSchema)
+# async def add_pet_profile_data(
+#     pet_data: PetProfileAddSchema,
+#     current_user: dict = Depends(get_current_user),
+#     session: AsyncSession = Depends(get_async_session)
+# ):
+#     """Create a new pet profile for the logged-in user"""
+#     pet_dict = prepare_pet_profile_data(pet_data, current_user["id"])
+#     new_pet = await add_pet_profile_data_service(**pet_dict, session=session)
+#
+#     if not new_pet:
+#         raise HTTPException(status_code=500, detail="Pet creation failed")
+#
+#     return {"message": "New pet profile added", "pet_id": new_pet.id}
+
+# chat 04 mini version
+# @router.post(
+#     "/pets",
+#     response_model=PetProfileShowSchema,
+#     status_code=status.HTTP_201_CREATED,
+# )
+# async def add_pet_profile_data(
+#     pet_data: PetProfileAddSchema,
+#     session: AsyncSession = Depends(get_async_session),
+#     current_user: Users  = Depends(get_current_user),
+# ):
+#     """Create a new pet profile for the logged-in user"""
+#     new_pet = await add_pet_profile_data_service(
+#         pet_data=pet_data,
+#         owner_id=current_user.id,
+#         session=session,
+#     )
+#     if not new_pet:
+#         raise HTTPException(status_code=500, detail="Pet creation failed")
+#     return new_pet
+
+@router.post(
+    "/pets",
+    response_model=PetProfileShowSchema,
+    status_code=status.HTTP_201_CREATED,
+)
 async def add_pet_profile_data(
     pet_data: PetProfileAddSchema,
-    current_user: dict = Depends(get_current_user),
-    session: AsyncSession = Depends(get_async_session)
+    session: AsyncSession = Depends(get_async_session),
+    current_user: Users    = Depends(get_current_user),
 ):
-    """Create a new pet profile for the logged-in user"""
-    pet_dict = prepare_pet_profile_data(pet_data, current_user["id"])
-    new_pet = await add_pet_profile_data_service(**pet_dict, session=session)
-
+    new_pet = await add_pet_profile_data_service(
+        pet_data=pet_data,
+        owner_id=current_user.id,
+        session=session,
+    )
     if not new_pet:
         raise HTTPException(status_code=500, detail="Pet creation failed")
 
-    return {"message": "New pet profile added", "pet_id": new_pet.id}
+    # Manually build the response dict
+    return {
+        "id":                new_pet.id,
+        "name":              new_pet.name,
+        "birthday":          new_pet.birthday,
+        "birth_year":        new_pet.birth_year,
+        "birth_month":       new_pet.birth_month,
+        "species":           new_pet.species,
+        "subspecies":        new_pet.subspecies,
+        "gender":            new_pet.gender,
+        "profile_image":     None,                # or new_pet.profile_image_id
+        "profile_description": new_pet.profile_description,
+        "created_at":        new_pet.created_at,
+        "pet_data":          None,                # explicitly None
+    }
 
 
 
 
-@router.patch("/pets/{pet_id}", response_model=PetProfileShowSchema)
+
+# @router.patch("/pets/{pet_id}", response_model=PetProfileShowSchema)
+# async def edit_pet_profile_data(
+#     pet_id: int,
+#     data: PetProfileEditSchema,
+#     current_user: dict = Depends(get_current_user),
+#     session: AsyncSession = Depends(get_async_session)
+# ):
+#     updated_pet = await edit_pet_profile_data_service(pet_id, current_user["id"], data, session)
+#
+#     if not updated_pet:
+#         raise HTTPException(status_code=404, detail="Pet not found or unauthorized")
+#
+#     return updated_pet
+
+
+# chat 04 mini version.. this one is so badass
+@router.patch(
+    "/pets/{pet_id}",
+    response_model=PetProfileShowSchema,
+)
 async def edit_pet_profile_data(
     pet_id: int,
     data: PetProfileEditSchema,
-    current_user: dict = Depends(get_current_user),
-    session: AsyncSession = Depends(get_async_session)
+    session: AsyncSession = Depends(get_async_session),
+    current_user: Users  = Depends(get_current_user),
 ):
-    updated_pet = await edit_pet_profile_data_service(pet_id, current_user["id"], data, session)
-
+    updated_pet = await edit_pet_profile_data_service(
+        pet_id=pet_id,
+        owner_id=current_user.id,
+        data=data,
+        session=session,
+    )
     if not updated_pet:
         raise HTTPException(status_code=404, detail="Pet not found or unauthorized")
-
     return updated_pet
 
 
 
-@router.post("/pets/{pet_id}/image", response_model=MediaBaseShowSchema)
+
+# @router.post("/pets/{pet_id}/image", response_model=MediaBaseShowSchema)
+# async def add_pet_profile_image_data(
+#     pet_id: int,
+#     file: UploadFile = File(...),
+#     session: AsyncSession = Depends(get_async_session),
+#     current_user: dict = Depends(get_current_user)
+# ):
+#     uploaded_file = await add_pet_profile_image_service(session, file, pet_id)
+#     return uploaded_file
+
+
+
+# chat 04 mini
+@router.post(
+    "/pets/{pet_id}/image",
+    response_model=MediaBaseShowSchema,
+    status_code=201,
+)
 async def add_pet_profile_image_data(
     pet_id: int,
     file: UploadFile = File(...),
     session: AsyncSession = Depends(get_async_session),
-    current_user: dict = Depends(get_current_user)
+    current_user: Users    = Depends(get_current_user),  # ← use the ORM type
 ):
-    uploaded_file = await add_pet_profile_image_service(session, file, pet_id)
+    uploaded_file = await add_pet_profile_image_service(
+        session=session,
+        file=file,
+        pet_id=pet_id,
+        user_id=current_user.id,  # ← pass along the owner
+    )
     return uploaded_file
-
 
 
 @router.get("/media/pet/{subcategory}/{filename}")

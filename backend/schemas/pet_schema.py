@@ -1,7 +1,7 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import date, datetime
 
@@ -31,7 +31,7 @@ class PetProfileShowSchema(BaseModel):
     species: str | None = None
     subspecies: str | None = None
     gender: str | None = None
-    profile_picture: MediaBaseShowSchema | None = None
+    profile_image: MediaBaseShowSchema | None = None
     profile_description: str | None = None
     created_at: datetime | None = None
 
@@ -50,7 +50,7 @@ class PetProfileAddSchema(BaseModel):
     species: str | None = None
     subspecies: str | None = None
     gender: str | None = None
-    profile_picture: str | None = None
+    # profile_image: str | None = Field(None, example=None)
     profile_description: str | None = None
 
     class Config:
@@ -66,7 +66,7 @@ class PetProfileEditSchema(BaseModel):
     birthday: date | None = None
     birth_year: int | None = None
     birth_month: int | None = None
-    profile_picture: str | None = None
+    profile_image: str | None = None
     profile_description: str | None = None
 
     class Config:

@@ -74,10 +74,11 @@ class UserProfileEditSchema(BaseModel):
     experience_with: str | None = None
     certifications: str | None = None
     certification_files: str | None = None
-    public_fields: list[str] | None = []
+    public_fields: list[str] | None = None
 
-    class Config:
-        from_attributes = True
+    # class Config:
+    #     from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserProfileShowSchema(BaseModel):

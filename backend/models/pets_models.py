@@ -38,6 +38,12 @@ class Pets(Base):
     #roles = relationship('Roles', back_populates='pet', lazy=True)
     pet_data = relationship('PetData', backref='pet', lazy=True)
     #medical_profile = relationship("MedicalProfile", back_populates="pet", lazy=True)
+    medical_profile = relationship(
+        "MedicalProfile",      # string avoids circular import
+        back_populates="pet",
+        uselist=False,         # one-to-one
+        lazy="selectin"
+    )
     # tasks = relationship('Tasks', backref='pet', lazy=True)
     #sitters = relationship('Sitters', back_populates='pet', lazy=True)
 

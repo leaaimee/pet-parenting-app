@@ -6,6 +6,7 @@ from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import selectinload
 
 from backend.models.pets_models import Pets
 from backend.models.medical_models import MedicalProfile, VaccinationRecord, VetVisit, MedicalDocument
@@ -82,51 +83,163 @@ async def get_pet_profile_data_service(pet_id: int, user_id: int, session: Async
 
 
 
+# async def add_pet_profile_image_service(
+#     session: AsyncSession,
+#     file: UploadFile,
+#     pet_id: int
+# ) -> UploadedFile:
+#     # Step 1: Save file to disk & get metadata
+#     file_info = await save_uploaded_file(file, category="pet", subcategory="profile_pic")
+#     file_hash: str = file_info["file_hash"]
+#
+#     # Step 2: Deduplication check
+#     existing = await session.execute(
+#         select(UploadedFile).where(UploadedFile.file_hash == file_hash)
+#     )
+#     existing_file = existing.scalar_one_or_none()
+#
+#     if existing_file:
+#         # Step 3: Reassign pet_id if needed
+#         if existing_file.pet_id != pet_id:
+#             existing_file.pet_id = pet_id
+#             await session.commit()
+#         return existing_file
+#
+#     # Step 4: Create new file entry
+#     new_file = UploadedFile(
+#         **file_info,
+#         pet_id=pet_id,
+#         upload_time=datetime.utcnow()
+#     )
+#     session.add(new_file)
+#     await session.commit()
+#     await session.refresh(new_file)
+#
+#     return new_file
+
+# chat 04 mini
 async def add_pet_profile_image_service(
     session: AsyncSession,
     file: UploadFile,
-    pet_id: int
+    pet_id: int,
+    user_id: int,
 ) -> UploadedFile:
-    # Step 1: Save file to disk & get metadata
-    file_info = await save_uploaded_file(file, category="pet", subcategory="profile_pic")
-    file_hash: str = file_info["file_hash"]
+    # 1) Save the bytes & get back a dict with:
+    #    original_filename, stored_filename, file_path,
+    #    category, subcategory, label?, mime_type, file_size, file_hash
+    file_info = await save_uploaded_file(
+        file,
+        category="pet",
+        subcategory="portrait"  # match VALID_SUBCATEGORIES!
+    )
+    file_hash = file_info["file_hash"]
 
-    # Step 2: Deduplication check
+    # 2) Dedupe by hash
     existing = await session.execute(
         select(UploadedFile).where(UploadedFile.file_hash == file_hash)
     )
     existing_file = existing.scalar_one_or_none()
-
     if existing_file:
-        # Step 3: Reassign pet_id if needed
-        if existing_file.pet_id != pet_id:
-            existing_file.pet_id = pet_id
+        if existing_file.pet_id != pet_id or existing_file.user_id != user_id:
+            existing_file.pet_id  = pet_id
+            existing_file.user_id = user_id
             await session.commit()
         return existing_file
 
-    # Step 4: Create new file entry
+    # 3) Create a new record
     new_file = UploadedFile(
-        **file_info,
-        pet_id=pet_id,
-        upload_time=datetime.utcnow()
+        pet_id           = pet_id,
+        user_id          = user_id,
+        **file_info,                  # original_filename, stored_filename, etc.
+        uploaded_at      = datetime.utcnow(),
+        is_active        = True,      # or whatever default you like
     )
     session.add(new_file)
     await session.commit()
     await session.refresh(new_file)
-
     return new_file
 
 
+# def prepare_pet_profile_data(data: PetProfileAddSchema, user_id: int) -> dict:
+#     return {
+#         **data.dict(exclude_unset=True),
+#         "parent_id": user_id
+#     }
 
-def prepare_pet_profile_data(data: PetProfileAddSchema, user_id: int) -> dict:
-    return {
-        **data.dict(exclude_unset=True),
-        "parent_id": user_id
-    }
+
+# async def add_pet_profile_data_service(pet_data: PetProfileAddSchema, user_id: int, session: AsyncSession):
+#     new_pet = Pets(**pet_data.dict(exclude_unset=True), parent_id=user_id)
+#     session.add(new_pet)
+#     await session.commit()
+#     await session.refresh(new_pet)
+#     return new_pet
+#
+#
+#
+# async def edit_pet_profile_data_service(
+#     pet_id: int,
+#     user_id: int,
+#     data: PetProfileEditSchema,
+#     session: AsyncSession
+# ):
+#     result = await session.execute(
+#         select(Pets).where(Pets.id == pet_id, Pets.parent_id == user_id)
+#     )
+#     pet = result.scalar_one_or_none()
+#
+#     if not pet:
+#         return None
+#
+#     for field, value in data.dict(exclude_unset=True).items():
+#         setattr(pet, field, value)
+#
+#     if data.birth_year or data.birth_month or data.birthday:
+#         pet.birthday, pet.birth_year, pet.birth_month = pet_birthday(
+#             data.birth_year, data.birth_month, getattr(data, "birth_day", None)
+#         )
+#
+#     try:
+#         await session.commit()
+#         await session.refresh(pet)
+#         return pet
+#     except SQLAlchemyError:
+#         await session.rollback()
+#         return None
 
 
-async def add_pet_profile_data_service(pet_data: PetProfileAddSchema, user_id: int, session: AsyncSession):
-    new_pet = Pets(**pet_data.dict(exclude_unset=True), parent_id=user_id)
+
+async def show_pet_profile_service(
+    pet_id: int,
+    session: AsyncSession
+) -> Pets | None:
+    result = await session.execute(
+        select(Pets)
+        .options(
+            selectinload(Pets.pet_data),
+            selectinload(Pets.profile_image),     # if you ever want to include that relationship object
+            # selectinload(Pets.medical_profile), # etc.
+        )
+        .where(Pets.id == pet_id)
+    )
+    pet = result.scalar_one_or_none()
+    return pet
+
+
+
+
+
+
+# chat 04 mini version
+async def add_pet_profile_data_service(
+    pet_data: PetProfileAddSchema,
+    owner_id: int,
+    session: AsyncSession,
+) -> Pets:
+    # Unpack the schema directly into the ORM model
+    new_pet = Pets(
+        parent_id=owner_id,
+        **pet_data.dict(exclude_unset=True),
+    )
     session.add(new_pet)
     await session.commit()
     await session.refresh(new_pet)
@@ -136,24 +249,25 @@ async def add_pet_profile_data_service(pet_data: PetProfileAddSchema, user_id: i
 
 async def edit_pet_profile_data_service(
     pet_id: int,
-    user_id: int,
+    owner_id: int,
     data: PetProfileEditSchema,
-    session: AsyncSession
-):
+    session: AsyncSession,
+) -> Pets | None:
     result = await session.execute(
-        select(Pets).where(Pets.id == pet_id, Pets.parent_id == user_id)
+        select(Pets).where(Pets.id == pet_id, Pets.parent_id == owner_id)
     )
     pet = result.scalar_one_or_none()
-
     if not pet:
         return None
 
+    # Patch only the sent fields
     for field, value in data.dict(exclude_unset=True).items():
         setattr(pet, field, value)
 
-    if data.birth_year or data.birth_month or data.birthday:
+    # If any birthday data changed, re-calculate
+    if any([data.birth_year, data.birth_month, data.birthday]):
         pet.birthday, pet.birth_year, pet.birth_month = pet_birthday(
-            data.birth_year, data.birth_month, getattr(data, "birth_day", None)
+            data.birth_year, data.birth_month, data.birthday
         )
 
     try:

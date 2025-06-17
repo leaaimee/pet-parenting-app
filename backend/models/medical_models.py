@@ -14,7 +14,12 @@ class MedicalProfile(Base):
     chronic_conditions = Column(Text)
     notes = Column(Text)
 
-    pet = relationship("Pets", back_populates="medical_profile", lazy=True)
+    # pet = relationship("Pets", back_populates="medical_profile", lazy=True)
+    pet = relationship(
+        "Pets",
+        back_populates="medical_profile",
+        lazy="selectin"
+    )
     vaccination_records = relationship("VaccinationRecord", back_populates="medical_profile", lazy=True)
     medications = relationship("Medication", back_populates="medical_profile", lazy=True)
     test_results = relationship("TestResult", back_populates="medical_profile", lazy=True)
