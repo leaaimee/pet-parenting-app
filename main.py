@@ -84,7 +84,7 @@ app.include_router(invitations_router, prefix="/api/v2", tags=["Invitations"])
 
 
 
-
+# we have to talk about this one
 # def custom_openapi():
 #     if app.openapi_schema:
 #         return app.openapi_schema

@@ -35,8 +35,6 @@ async def view_pets_family_data(
     return await get_user_pets_service(current_user["id"], session)
 
 
-
-
 @router.get("/pets/{pet_id}", response_model=PetProfileShowSchema)
 async def get_pet_profile_data(
     pet_id: int,
@@ -78,26 +76,8 @@ async def show_pet_profile_data(
 #
 #     return {"message": "New pet profile added", "pet_id": new_pet.id}
 
-# chat 04 mini version
-# @router.post(
-#     "/pets",
-#     response_model=PetProfileShowSchema,
-#     status_code=status.HTTP_201_CREATED,
-# )
-# async def add_pet_profile_data(
-#     pet_data: PetProfileAddSchema,
-#     session: AsyncSession = Depends(get_async_session),
-#     current_user: Users  = Depends(get_current_user),
-# ):
-#     """Create a new pet profile for the logged-in user"""
-#     new_pet = await add_pet_profile_data_service(
-#         pet_data=pet_data,
-#         owner_id=current_user.id,
-#         session=session,
-#     )
-#     if not new_pet:
-#         raise HTTPException(status_code=500, detail="Pet creation failed")
-#     return new_pet
+# latest version - temp
+
 
 @router.post(
     "/pets",
@@ -134,25 +114,7 @@ async def add_pet_profile_data(
     }
 
 
-
-
-
-# @router.patch("/pets/{pet_id}", response_model=PetProfileShowSchema)
-# async def edit_pet_profile_data(
-#     pet_id: int,
-#     data: PetProfileEditSchema,
-#     current_user: dict = Depends(get_current_user),
-#     session: AsyncSession = Depends(get_async_session)
-# ):
-#     updated_pet = await edit_pet_profile_data_service(pet_id, current_user["id"], data, session)
-#
-#     if not updated_pet:
-#         raise HTTPException(status_code=404, detail="Pet not found or unauthorized")
-#
-#     return updated_pet
-
-
-# chat 04 mini version.. this one is so badass
+# current version
 @router.patch(
     "/pets/{pet_id}",
     response_model=PetProfileShowSchema,
@@ -174,21 +136,7 @@ async def edit_pet_profile_data(
     return updated_pet
 
 
-
-
-# @router.post("/pets/{pet_id}/image", response_model=MediaBaseShowSchema)
-# async def add_pet_profile_image_data(
-#     pet_id: int,
-#     file: UploadFile = File(...),
-#     session: AsyncSession = Depends(get_async_session),
-#     current_user: dict = Depends(get_current_user)
-# ):
-#     uploaded_file = await add_pet_profile_image_service(session, file, pet_id)
-#     return uploaded_file
-
-
-
-# chat 04 mini
+# latest version
 @router.post(
     "/pets/{pet_id}/image",
     response_model=MediaBaseShowSchema,
@@ -207,6 +155,7 @@ async def add_pet_profile_image_data(
         user_id=current_user.id,  # ← pass along the owner
     )
     return uploaded_file
+
 
 
 @router.get("/media/pet/{subcategory}/{filename}")

@@ -41,10 +41,6 @@ async def protected_test(current_user: dict = Depends(get_current_user)):
 
 
 
-
-
-
-
 @router.post("/", response_model=UserAccountShowSchema, status_code=201)
 async def register_user_data(
     user_data: UserAccountCreateSchema,
@@ -59,7 +55,6 @@ async def register_user_data(
 }
 
 
-
 @router.post("/login")
 async def login_user_data(
     user_data: UserLoginSchema,
@@ -68,21 +63,7 @@ async def login_user_data(
     return await login_user_service(user_data, session)
 
 
-# @router.get("/users/me", response_model=UserProfileShowSchema)
-# async def show_private_user_profile_data(
-#     session: AsyncSession = Depends(get_async_session),
-#     current_user: Users = Depends(get_current_user)
-# ):
-#     return await show_user_profile_service(current_user.id, session)
-
-# @router.get("/users/me", response_model=UserProfileShowSchema)
-# async def show_private_user_profile_data(
-#     session: AsyncSession = Depends(get_async_session),
-#     current_user: Users = Depends(get_current_user)
-# ):
-#     return await user.profile
-
-# chat 04-mini
+# latest version
 @router.get("/users/me", response_model=UserProfileShowSchema)
 async def show_private_user_profile_data(
     session: AsyncSession = Depends(get_async_session),
@@ -106,19 +87,7 @@ async def show_public_user_profile_data(
     return await show_user_profile_service(user_id, session, public=True)
 
 
-# @router.post("/users/me", response_model=UserProfileShowSchema, status_code=201)
-# async def add_user_profile_data(
-#     user_id: int,
-#     user_data: UserProfileEditSchema,
-#     session: AsyncSession = Depends(get_async_session),
-#     current_user: dict = Depends(get_current_user)
-# ):
-#     user_id = current_user["id"]
-#
-#     new_profile = await add_user_profile_service(user_id, user_data, session)
-#     return new_profile
-
-# chat 04 mini approach .. they rock
+# latest version
 @router.post(
     "/users/me",
     response_model=UserProfileShowSchema,
@@ -149,7 +118,7 @@ async def add_user_profile_data(
 #     updated_user = await edit_user_profile_service(user_id, user_data, session)
 #     return updated_user
 
-# chat 04 mini ..
+# latest version
 @router.patch("/users/me", response_model=UserProfileShowSchema)
 async def edit_user_profile_data(
     user_data: UserProfileEditSchema,
@@ -162,7 +131,6 @@ async def edit_user_profile_data(
         session=session,
     )
     return updated_profile
-
 
 
 
@@ -203,7 +171,6 @@ async def get_user_profile_image_data(
     filename: str
 ):
     return await get_user_profile_image_service(subcategory, filename)
-
 
 
 

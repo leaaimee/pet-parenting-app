@@ -50,7 +50,7 @@ class PetProfileAddSchema(BaseModel):
     species: str | None = None
     subspecies: str | None = None
     gender: str | None = None
-    # profile_image: str | None = Field(None, example=None)
+    # profile_image: str | None = Field(None, example=None) # Temp
     profile_description: str | None = None
 
     class Config:

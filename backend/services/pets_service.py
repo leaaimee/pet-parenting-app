@@ -117,7 +117,7 @@ async def get_pet_profile_data_service(pet_id: int, user_id: int, session: Async
 #
 #     return new_file
 
-# chat 04 mini
+# latest version
 async def add_pet_profile_image_service(
     session: AsyncSession,
     file: UploadFile,
@@ -152,14 +152,14 @@ async def add_pet_profile_image_service(
         user_id          = user_id,
         **file_info,                  # original_filename, stored_filename, etc.
         uploaded_at      = datetime.utcnow(),
-        is_active        = True,      # or whatever default you like
+        is_active        = True,      # or whatever default
     )
     session.add(new_file)
     await session.commit()
     await session.refresh(new_file)
     return new_file
 
-
+# to be checked if needed:
 # def prepare_pet_profile_data(data: PetProfileAddSchema, user_id: int) -> dict:
 #     return {
 #         **data.dict(exclude_unset=True),
@@ -225,11 +225,7 @@ async def show_pet_profile_service(
     return pet
 
 
-
-
-
-
-# chat 04 mini version
+# latest version
 async def add_pet_profile_data_service(
     pet_data: PetProfileAddSchema,
     owner_id: int,

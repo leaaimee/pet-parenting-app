@@ -14,7 +14,6 @@ class MedicalProfile(Base):
     chronic_conditions = Column(Text)
     notes = Column(Text)
 
-    # pet = relationship("Pets", back_populates="medical_profile", lazy=True)
     pet = relationship(
         "Pets",
         back_populates="medical_profile",

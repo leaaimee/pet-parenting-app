@@ -6,6 +6,8 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt import InvalidTokenError
 
+from sqlalchemy.orm import selectinload
+
 from passlib.context import CryptContext
 
 from backend.database import get_async_session
@@ -29,8 +31,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # Token scheme for protected routes - by Charles
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-
-
 # base verify - by Charles
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
@@ -41,10 +41,8 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from backend.models.users_models import Users
-from backend.schemas.user_schema import UserPublic, TokenData
+
 
 # Charles Version
 # async def get_user(email: str, session: AsyncSession):
@@ -58,50 +56,26 @@ from backend.schemas.user_schema import UserPublic, TokenData
 #     except Exception as e:
 #         return e
 
-# chatgpt version
+
 
 from fastapi import HTTPException
 from backend.schemas.user_schema import UserAccountShowSchema
 from backend.models.users_models import Users
 from sqlalchemy import select
 
-# async def get_user(email: str, session: AsyncSession):
-#     try:
-#         result = await session.execute(select(Users).where(Users.email == email))
-#         user = result.scalar_one_or_none()
-#         if user:
-#             return UserAccountShowSchema.from_orm(user)
-#         return None
-#     except Exception as e:
-#         print("❌ get_user error:", e)
-#         raise HTTPException(status_code=500, detail="Error accessing user")
 
 
-async def get_user(session: AsyncSession, email: str):  # 👈 FIXED order
+async def get_user(session: AsyncSession, email: str):  #  FIXED order
     try:
         result = await session.execute(select(Users).where(Users.email == email))
         user = result.scalar_one_or_none()
         if user:
-            return user  # 👈 NO .from_orm here — we need full ORM instance for password check
+            return user  # NO .from_orm here — we need full ORM instance for password check
         return None
     except Exception as e:
-        print("❌ get_user error:", e)
+        print("get_user error:", e)
         raise HTTPException(status_code=500, detail="Error accessing user")
 
-
-# Dominiks version
-# async def get_user(email: str, session: AsyncSession):
-#     print("EIN ZEICHEN!")
-#     try:
-#         result = await session.execute(select(Users).where(Users.email == email))
-#         user_from_db = result.scalar_one_or_none()  # Awaited the result
-#         print("USER FROM DB:", user_from_db)
-#         if user_from_db:
-#             return UserPublic.model_validate(user_from_db)
-#         else:
-#             return None  # Explicitly return None if no user is found
-#     except Exception as e:
-#         raise Exception("unknown Error:", e)
 
 
 # async def get_current_user(
@@ -147,87 +121,8 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-# async def get_current_user(email: str, session: AsyncSession, token: Annotated[str, Depends(oauth2_scheme)]):
-#     credentials_exception = HTTPException(
-#         status_code=status.HTTP_401_UNAUTHORIZED,
-#         detail="Could not validate credentials",
-#         headers={"WWW-Authenticate": "Bearer"},
-#     )
-#     try:
-#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-#         username = payload.get("sub")
-#         if username is None:
-#             raise credentials_exception
-#         token_data = TokenData(username=username)
-#     except InvalidTokenError:
-#         raise credentials_exception
-#     user = await get_user(email, session)
-#     if user is None:
-#         raise credentials_exception
-#     return user
 
-
-# async def get_current_user(
-#     token: str = Depends(oauth2_scheme),
-#     session: AsyncSession = Depends(get_async_session)
-# ):
-#     credentials_exception = HTTPException(
-#         status_code=status.HTTP_401_UNAUTHORIZED,
-#         detail="Could not validate credentials",
-#         headers={"WWW-Authenticate": "Bearer"},
-#     )
-#     try:
-#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-#         user_id: str = payload.get("sub")
-#         if user_id is None:
-#             raise credentials_exception
-#
-#     except JWTError:
-#         raise credentials_exception
-#
-#     result = await session.execute(select(Users).where(Users.id == int(user_id)))
-#     user = result.scalar_one_or_none()
-#     if user is None:
-#         raise credentials_exception
-#
-#     return user
-
-
-
-
-
-
-from sqlalchemy.orm import selectinload
-#
-# async def get_current_user(
-#     token: str = Depends(oauth2_scheme),
-#     session: AsyncSession = Depends(get_async_session)
-# ):
-#     credentials_exception = HTTPException(
-#         status_code=status.HTTP_401_UNAUTHORIZED,
-#         detail="Could not validate credentials",
-#         headers={"WWW-Authenticate": "Bearer"},
-#     )
-#     try:
-#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-#         user_id: str = payload.get("sub")
-#         if user_id is None:
-#             raise credentials_exception
-#
-#     except JWTError:
-#         raise credentials_exception
-#
-#     result = await session.execute(
-#         select(Users).options(selectinload(Users.profile)).where(Users.id == user_id)
-#     )
-#     user = result.scalar_one_or_none()
-#     if user is None:
-#         raise credentials_exception
-#
-#     return user
-
-
-# chat 04-mini version
+# latest version
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),

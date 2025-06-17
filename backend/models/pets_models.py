@@ -37,7 +37,6 @@ class Pets(Base):
 
     #roles = relationship('Roles', back_populates='pet', lazy=True)
     pet_data = relationship('PetData', backref='pet', lazy=True)
-    #medical_profile = relationship("MedicalProfile", back_populates="pet", lazy=True)
     medical_profile = relationship(
         "MedicalProfile",      # string avoids circular import
         back_populates="pet",

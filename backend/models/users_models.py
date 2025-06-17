@@ -57,7 +57,6 @@ class UserProfile(Base):
     certification_files = Column(String(300))
 
     account = relationship("Users", back_populates="profile")
-    #account = relationship("Users", back_populates="profile")
 
     public_fields: JSON = Column(JSON, default=[])
 
