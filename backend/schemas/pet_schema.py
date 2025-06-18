@@ -1,11 +1,11 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel
+
 from datetime import date, datetime
 
-from backend.schemas.media_schema import MediaBaseShowSchema
+
 
 
 
@@ -31,11 +31,10 @@ class PetProfileShowSchema(BaseModel):
     species: str | None = None
     subspecies: str | None = None
     gender: str | None = None
-    profile_image: MediaBaseShowSchema | None = None
     profile_description: str | None = None
     created_at: datetime | None = None
 
-    pet_data: Optional["PetDataShowSchema"]
+    pet_data: PetDataShowSchema | None = None
 
     class Config:
         from_attributes = True
@@ -50,7 +49,6 @@ class PetProfileAddSchema(BaseModel):
     species: str | None = None
     subspecies: str | None = None
     gender: str | None = None
-    # profile_image: str | None = Field(None, example=None) # Temp
     profile_description: str | None = None
 
     class Config:
@@ -66,7 +64,6 @@ class PetProfileEditSchema(BaseModel):
     birthday: date | None = None
     birth_year: int | None = None
     birth_month: int | None = None
-    profile_image: str | None = None
     profile_description: str | None = None
 
     class Config:

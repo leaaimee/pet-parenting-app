@@ -5,6 +5,7 @@ from fastapi import HTTPException
 
 from datetime import datetime
 
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,44 +16,17 @@ from starlette.datastructures import UploadFile
 from passlib.hash import bcrypt
 
 from backend.auth.auth2 import get_password_hash
+from backend.domain.exceptions import NotFoundError, InternalError
+from backend.models.media_models import ProfileUpload
+from backend.services.helpers.uploads import save_file_to_model
 from backend.utils.upload_helper import get_upload_subpath, VALID_SUBCATEGORIES
 from backend.models.users_models import Users, UserProfile
 from backend.models.pets_models import Pets
-from backend.models.media_models import UploadedFile
 from backend.schemas.user_schema import UserAccountCreateSchema, UserProfileEditSchema, UserLoginSchema, \
     UserProfileShowSchema
 from backend.utils.upload_helper import save_uploaded_file
 from backend.auth.auth2 import create_access_token
 
-
-
-# async def register_user_service(user_data: UserAccountCreateSchema, session: AsyncSession):
-#     try:
-#         result = await session.execute(
-#             select(Users).where(Users.email == user_data.email)
-#         )
-#         if result.scalar_one_or_none():
-#             raise HTTPException(status_code=400, detail="Email already registered")
-#
-#         #hashed_password = bcrypt.hash(user_data.password)
-#         hashed_password = get_password_hash(user_data.password)
-#
-#         new_user = Users(
-#             email=user_data.email,
-#             password_hash=hashed_password
-#         )
-#         session.add(new_user)
-#         await session.flush()
-#         await session.commit()
-#         await session.refresh(new_user)
-#         return new_user
-#
-#     except HTTPException as http_exc:
-#         raise http_exc
-#
-#     except Exception as e:
-#         await session.rollback()
-#         raise HTTPException(status_code=500, detail=f"User creation failed: {str(e)}")
 
 
 # create data content version
@@ -122,6 +96,16 @@ async def login_user_service(user_data: UserLoginSchema, session: AsyncSession):
 
 
 
+async def save_user_avatar(user_id: int, file: UploadFile, session: AsyncSession):
+    return await save_file_to_model(
+        session=session,
+        file=file,
+        model=ProfileUpload,
+        category="user",
+        subcategory="avatar",
+        user_id=user_id,
+    )
+
 
 async def get_user_profile_image_service(subcategory: str, filename: str) -> FileResponse:
     if subcategory not in VALID_SUBCATEGORIES["user"]:
@@ -142,116 +126,17 @@ async def get_user_profile_image_service(subcategory: str, filename: str) -> Fil
 
 
 
-async def add_user_profile_image_service(
-    session: AsyncSession,
-    file: UploadFile,
-    user_id: int,
-) -> UploadedFile:
-    """Add user profile image data"""
-
-    file_info = await save_uploaded_file(file, category="user", subcategory="profile_image")
-    file_hash: str = file_info["file_hash"]
-
-    existing = await session.execute(
-        select(UploadedFile).where(UploadedFile.file_hash == file_hash)
-    )
-    existing_file = existing.scalar_one_or_none()
-
-    if existing_file:
-        if existing_file.user_id != user_id:
-            existing_file.user_id = user_id
-            await session.commit()
-        return existing_file
-
-    new_file = UploadedFile(
-        **file_info,
-        user_id=user_id,
-        upload_time=datetime.utcnow()
-    )
-    session.add(new_file)
-    await session.commit()
-    await session.refresh(new_file)
-
-    return new_file
-
-
-
-async def edit_user_profile_image_service(
-    session: AsyncSession,
-    file: UploadFile,
-    user_id: int,
-) -> UploadedFile:
-    """Replace user's existing profile image with a new one."""
-
-    # Optional: Remove old profile image file from DB
-    old_file = await session.execute(
-        select(UploadedFile).where(
-            UploadedFile.user_id == user_id,
-            UploadedFile.category == "user",
-            UploadedFile.subcategory == "profile_image"
-        )
-    )
-    old_file = old_file.scalar_one_or_none()
-
-    # Save new uploaded file
-    file_info = await save_uploaded_file(file, category="user", subcategory="profile_image")
-    new_file = UploadedFile(
-        **file_info,
-        user_id=user_id,
-        upload_time=datetime.utcnow()
-    )
-
-    if old_file:
-        await session.delete(old_file)
-
-    session.add(new_file)
-    await session.commit()
-    await session.refresh(new_file)
-
-    return new_file
-
-
-
-# async def add_user_profile_service(
-#     user_id: int,
-#     user_data: UserProfileEditSchema,
-#     session: AsyncSession
-# ):
-#     try:
-#         # Check if profile already exists
-#         result = await session.execute(
-#             select(UserProfile).where(UserProfile.user_id == user_id)
-#         )
-#         if result.scalar_one_or_none():
-#             raise HTTPException(status_code=400, detail="Profile already exists")
-#
-#         new_profile = UserProfile(
-#             user_id=user_id,
-#             **user_data.dict(exclude_unset=True)
-#         )
-#         session.add(new_profile)
-#         await session.commit()
-#         await session.refresh(new_profile)
-#         return new_profile
-#
-#     except Exception as e:
-#         await session.rollback()
-#         raise HTTPException(status_code=500, detail=f"Failed to create profile: {str(e)}")
-
-
-# chat 04 mini approach
 async def add_user_profile_service(
     user_id: int,
     data: UserProfileEditSchema,
     session: AsyncSession,
 ) -> UserProfileShowSchema:
-    # 1. Try to load existing profile
+
     result = await session.execute(
         select(UserProfile).where(UserProfile.user_id == user_id)
     )
     profile = result.scalar_one_or_none()
 
-    # 2. Create or update
     if profile is None:
         profile = UserProfile(user_id=user_id, **data.dict())
         session.add(profile)
@@ -261,58 +146,44 @@ async def add_user_profile_service(
             setattr(profile, field, value)
         status_code = status.HTTP_200_OK
 
-    # 3. Commit & refresh
     await session.commit()
     await session.refresh(profile)
 
-    # 4. Return schema
     return UserProfileShowSchema.from_orm(profile)
 
 
 
 async def edit_user_profile_service(
     user_id: int,
-    user_data: UserProfileEditSchema,
+    data: UserProfileEditSchema,
     session: AsyncSession
-):
+) -> UserProfile:
+    profile = await session.scalar(
+        select(UserProfile).where(UserProfile.user_id == user_id)
+    )
+    if not profile:
+        raise NotFoundError("Profile not found")
+
+    updates = data.model_dump(
+        mode="python",
+        exclude_unset=True,
+        exclude_none=True,
+    )
+    # optional guard against Swagger’s “string” placeholder:
+    updates = {k: v for k, v in updates.items() if v != "string"}
+
+    for field, value in updates.items():
+        setattr(profile, field, value)
+
     try:
-        result = await session.execute(
-            select(UserProfile).where(UserProfile.user_id == user_id)
-        )
-        profile = result.scalar_one_or_none()
-
-        if not profile:
-            raise HTTPException(status_code=404, detail="Profile not found")
-
-        for field, value in user_data.dict(exclude_unset=True).items():
-            setattr(profile, field, value)
-
         await session.commit()
         await session.refresh(profile)
         return profile
-
-    except Exception as e:
+    except SQLAlchemyError:
         await session.rollback()
-        raise HTTPException(status_code=500, detail=f"Failed to update profile: {str(e)}")
+        raise InternalError("Failed to update profile, please try again later.")
 
 
-
-# async def show_user_profile_service(user_id: int, session: AsyncSession, public: bool = False):
-#     try:
-#         result = await session.execute(select(Users).where(Users.id == user_id))
-#         user = result.scalar_one_or_none()
-#
-#         if not user:
-#             raise HTTPException(status_code=404, detail="User not found")
-#
-#         if public:
-#             visible_fields = user.public_fields or []
-#             return {field: getattr(user, field, None) for field in visible_fields}
-#
-#         return user  # full object for private use
-#
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=f"Error fetching user: {str(e)}")
 
 async def show_user_profile_service(user_id: int, session: AsyncSession, public: bool = False):
     try:
@@ -352,7 +223,6 @@ def is_user_profile_empty(profile: UserProfile) -> bool:
     return all([
         not profile.name,
         not profile.pronouns,
-        not profile.profile_image,
         not profile.profile_description,
         not profile.phone,
         not profile.location,
@@ -367,7 +237,7 @@ def is_user_profile_empty(profile: UserProfile) -> bool:
 
 async def delete_user_account_service(user_id: int, session: AsyncSession):
     try:
-        # Check if user exists
+
         user_result = await session.execute(
             select(Users).where(Users.id == user_id)
         )
@@ -376,7 +246,6 @@ async def delete_user_account_service(user_id: int, session: AsyncSession):
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
-        # Check for pets
         pets_result = await session.execute(
             select(Pets).where(Pets.parent_id == user_id)
         )
@@ -388,7 +257,6 @@ async def delete_user_account_service(user_id: int, session: AsyncSession):
                 detail="Cannot delete account: pet profiles still exist."
             )
 
-        # Check user profile
         profile_result = await session.execute(
             select(UserProfile).where(UserProfile.user_id == user_id)
         )
@@ -400,7 +268,6 @@ async def delete_user_account_service(user_id: int, session: AsyncSession):
                 detail="Cannot delete account: user profile still contains data."
             )
 
-        # Proceed to delete user and optionally profile
         if profile:
             await session.delete(profile)
         await session.delete(user)

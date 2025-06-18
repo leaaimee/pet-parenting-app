@@ -20,17 +20,15 @@ from backend.routes.invitations_routes import router as invitations_router
 from sqlalchemy import select
 from backend.models.users_models import Users
 
-from fastapi.openapi.utils import get_openapi
+from fastapi.responses import JSONResponse
+from backend.domain.exceptions import NotFoundError, PermissionDeniedError, ConflictError, InternalError
+
+
 
 
 app = FastAPI()
 
 
-# Charles version
-# @app.get("/demo", response_model=UserPublic)
-# async def demo(session: AsyncSession = Depends(get_async_session)):
-#     result = await get_user(email="leaaimee2010@gmail.com", session=session)
-#     return result
 
 @app.get("/demo", response_model=UserAccountShowSchema)
 async def demo(session: AsyncSession = Depends(get_async_session)):
@@ -76,62 +74,29 @@ async def login_for_access_token(
 
 
 
-# app.include_router(users_router, prefix="/api/v2/users", tags=["Users v2"])
 app.include_router(users_router, prefix="/api/v2", tags=["Users v2"])
 app.include_router(pets_router, prefix="/api/v2", tags=["Pets"])
 app.include_router(invitations_router, prefix="/api/v2", tags=["Invitations"])
 
 
 
+@app.exception_handler(NotFoundError)
+async def handle_not_found(request, exc):
+    return JSONResponse(status_code=404, content={"detail": str(exc)})
 
-# we have to talk about this one
-# def custom_openapi():
-#     if app.openapi_schema:
-#         return app.openapi_schema
-#     openapi_schema = get_openapi(
-#         title="Pet Parenting API",
-#         version="1.0.0",
-#         description="API for managing users, pets, profiles, and medical data",
-#         routes=app.routes,
-#     )
-#     # ✅ Register the token endpoint manually
-#     openapi_schema["paths"]["/token"] = {
-#         "post": {
-#             "summary": "Get access token",
-#             "requestBody": {
-#                 "content": {
-#                     "application/x-www-form-urlencoded": {
-#                         "schema": {
-#                             "type": "object",
-#                             "properties": {
-#                                 "username": {"type": "string"},
-#                                 "password": {"type": "string"},
-#                             },
-#                             "required": ["username", "password"],
-#                         }
-#                     }
-#                 }
-#             },
-#             "responses": {
-#                 "200": {
-#                     "description": "Successful login",
-#                     "content": {
-#                         "application/json": {
-#                             "schema": {
-#                                 "type": "object",
-#                                 "properties": {
-#                                     "access_token": {"type": "string"},
-#                                     "token_type": {"type": "string"},
-#                                 }
-#                             }
-#                         }
-#                     }
-#                 },
-#                 "401": {"description": "Unauthorized"},
-#             }
-#         }
-#     }
-#     app.openapi_schema = openapi_schema
-#     return app.openapi_schema
-#
-# app.openapi = custom_openapi  # ✅ assign it
+@app.exception_handler(PermissionDeniedError)
+async def handle_permission_denied(request, exc):
+    return JSONResponse(status_code=403, content={"detail": str(exc)})
+
+@app.exception_handler(ConflictError)
+async def handle_conflict(request, exc):
+    return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+@app.exception_handler(InternalError)
+async def handle_internal_error(request, exc: InternalError):
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc)},
+    )
+
+

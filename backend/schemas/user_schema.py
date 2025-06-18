@@ -3,9 +3,6 @@ from datetime import datetime, date
 from pydantic import BaseModel, EmailStr, ConfigDict
 
 
-from typing import List, Optional
-
-from backend.schemas.media_schema import MediaBaseShowSchema
 
 
 class UserPublic(BaseModel):
@@ -50,7 +47,6 @@ class UserProfileAddSchema(BaseModel):
     phone: str | None = None
     location: str | None = None
     birth_date: date | None = None
-    profile_image: str | None = None
     profile_description: str | None = None
     languages_spoken: str | None = None
     experience_with: str | None = None
@@ -68,7 +64,6 @@ class UserProfileEditSchema(BaseModel):
     phone: str | None = None
     location: str | None = None
     birth_date: date | None = None
-    profile_image: str | None = None
     profile_description: str | None = None
     languages_spoken: str | None = None
     experience_with: str | None = None
@@ -88,7 +83,6 @@ class UserProfileShowSchema(BaseModel):
     phone: str | None = None
     location: str | None = None
     birth_date: date | None = None
-    profile_image: str | None = None
     profile_description: str | None = None
     languages_spoken: str | None = None
     experience_with: str | None = None

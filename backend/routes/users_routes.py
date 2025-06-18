@@ -1,4 +1,6 @@
 from email.policy import default
+import os
+import mimetypes
 
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from pycparser.ply.yacc import resultlimit
@@ -6,34 +8,33 @@ from pycparser.ply.yacc import resultlimit
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.functions import user
 from starlette import status
+from sqlalchemy.future import select
 
+from backend.models.media_models import ProfileUpload
 from backend.models.users_models import Users
 from backend.auth.auth2 import get_user
+from backend.schemas.media_schema import ProfileUploadShowSchema
+from backend.services.helpers.uploads import save_file_to_model, save_user_avatar
 from backend.services.users_service import register_user_service, show_user_profile_service, add_user_profile_service, edit_user_profile_service
-from backend.services.users_service import add_user_profile_image_service, login_user_service, get_user_profile_image_service, edit_user_profile_image_service
+from backend.services.users_service import login_user_service, get_user_profile_image_service
 from backend.services.users_service import delete_user_profile_service, delete_user_account_service
 
 from backend.schemas.user_schema import UserLoginSchema, UserProfileEditSchema, UserProfileShowSchema, UserAccountShowSchema, UserAccountCreateSchema
-from backend.schemas.user_schema import TokenRequest
-from backend.schemas.media_schema import MediaBaseShowSchema
 
-from backend.auth.auth import get_current_user
 
 from backend.database import get_async_session
 
 from backend.auth.auth2 import get_current_user
 
+from fastapi import APIRouter, Depends, File
 
+from fastapi.responses import FileResponse
 
-
+from backend.utils.upload_helper import get_upload_subpath, VALID_SUBCATEGORIES
 
 router = APIRouter()
 
 
-#@router.get("/demo_user", response_model=UserProfileShowSchema)
-#async def demo_user(session: AsyncSession = Depends(get_async_session)):
-#    result = await get_user("first_user@example.com", session=session)
-#    return result
 
 @router.get("/protected-test")
 async def protected_test(current_user: dict = Depends(get_current_user)):
@@ -63,7 +64,7 @@ async def login_user_data(
     return await login_user_service(user_data, session)
 
 
-# latest version
+
 @router.get("/users/me", response_model=UserProfileShowSchema)
 async def show_private_user_profile_data(
     session: AsyncSession = Depends(get_async_session),
@@ -87,7 +88,7 @@ async def show_public_user_profile_data(
     return await show_user_profile_service(user_id, session, public=True)
 
 
-# latest version
+
 @router.post(
     "/users/me",
     response_model=UserProfileShowSchema,
@@ -107,18 +108,7 @@ async def add_user_profile_data(
     return profile
 
 
-# @router.put("/users/me", response_model=UserProfileShowSchema)
-# async def edit_user_profile_data(
-#     user_data: UserProfileEditSchema,
-#     session: AsyncSession = Depends(get_async_session),
-#     current_user: dict = Depends(get_current_user)
-# ):
-#     user_id = current_user["id"]
-#
-#     updated_user = await edit_user_profile_service(user_id, user_data, session)
-#     return updated_user
 
-# latest version
 @router.patch("/users/me", response_model=UserProfileShowSchema)
 async def edit_user_profile_data(
     user_data: UserProfileEditSchema,
@@ -127,50 +117,87 @@ async def edit_user_profile_data(
 ):
     updated_profile = await edit_user_profile_service(
         user_id=current_user.id,
-        user_data=user_data,
+        data=user_data,
         session=session,
     )
     return updated_profile
 
 
 
-@router.post("/users/me/image", response_model=MediaBaseShowSchema)
+@router.post("/me/avatar", response_model=ProfileUploadShowSchema)
+async def upload_avatar_for_current_user(
+    file: UploadFile = File(...),
+    user: Users = Depends(get_current_user),
+    session: AsyncSession = Depends(get_async_session),
+):
+    return await save_user_avatar(user.id, file, session)
+
+
+
+@router.post(
+    "/users/me/image",
+    response_model=ProfileUploadShowSchema,
+    status_code=status.HTTP_201_CREATED,
+)
 async def add_user_profile_image_data(
-    user_id: int,
     file: UploadFile = File(...),
+    current_user = Depends(get_current_user),
     session: AsyncSession = Depends(get_async_session),
-    current_user: dict = Depends(get_current_user)
 ):
-    """Add user profile image data"""
+    return await save_file_to_model(
+        session=session,
+        file=file,
+        model=ProfileUpload,
+        category="user",
+        subcategory="profile_pic",
+        user_id=current_user.id
+    )
 
-    user_id = current_user["id"]
-
-    uploaded_file = await add_user_profile_image_service(session, file, user_id)
-    return uploaded_file
 
 
-
-@router.put("/users/me/image", response_model=MediaBaseShowSchema)
-async def edit_user_profile_image_data(
-    user_id: int,
+@router.put(
+    "/users/me/image",
+    response_model=ProfileUploadShowSchema,
+)
+async def replace_user_profile_image_data(
     file: UploadFile = File(...),
+    current_user = Depends(get_current_user),
     session: AsyncSession = Depends(get_async_session),
-    current_user: dict = Depends(get_current_user)
 ):
-    """Replace user profile image"""
-    user_id = current_user["id"]
+    # Delete old profile picture if exists
+    old = await session.execute(
+        select(ProfileUpload).where(
+            ProfileUpload.user_id == current_user.id,
+            ProfileUpload.subcategory == "profile_pic",
+        )
+    )
+    old_file = old.scalar_one_or_none()
+    if old_file:
+        await session.delete(old_file)
+        await session.commit()
 
-    uploaded_file = await edit_user_profile_image_service(session, file, user_id)
-    return uploaded_file
+    # Reuse the POST logic
+    return await add_user_profile_image_data(file, current_user, session)
 
 
 
 @router.get("/media/user/{subcategory}/{filename}")
-async def get_user_profile_image_data(
-    subcategory: str,
-    filename: str
-):
-    return await get_user_profile_image_service(subcategory, filename)
+def get_user_profile_image_data(subcategory: str, filename: str):
+    # Validate subcategory
+    if subcategory not in VALID_SUBCATEGORIES["user"]:
+        raise HTTPException(status_code=400, detail="Invalid user image subcategory")
+
+    folder = get_upload_subpath("user", subcategory)
+    path = os.path.join(folder, filename)
+    if not os.path.isfile(path):
+        raise HTTPException(status_code=404, detail="File not found")
+
+    media_type, _ = mimetypes.guess_type(path)
+    return FileResponse(
+        path=path,
+        media_type=media_type or "application/octet-stream",
+        filename=filename
+    )
 
 
 

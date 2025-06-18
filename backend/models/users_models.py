@@ -1,6 +1,6 @@
 from backend.database import Base
 from sqlalchemy import Column, Integer, String, Text, Date, DateTime, ForeignKey, Boolean, Enum
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, foreign
 from sqlalchemy.sql import func
 
 from backend.utils.constants import RoleType, AccessLevel, InvitationStatus
@@ -25,11 +25,10 @@ class Users(Base):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    #profile = relationship("UserProfile", back_populates="account", uselist=False, cascade="all, delete-orphan")
 
     profile = relationship("UserProfile", back_populates="account", uselist=False, cascade="all, delete-orphan")
+    #profile = relationship("UserProfile", back_populates="account", uselist=False, cascade="all, delete-orphan")
 
-    uploaded_files = relationship("UploadedFile", back_populates="user", lazy="selectin")
     #roles = relationship('Roles', back_populates='user', lazy=True)
     # assigned_tasks = relationship('Tasks', backref='assigned_user', lazy=True)
     #sitting_assignments = relationship('Sitters', back_populates='sitter', overlaps="sitters")
@@ -45,18 +44,24 @@ class UserProfile(Base):
 
     name = Column(String(100), nullable=False)
     pronouns = Column(String(50))
-    profile_image = Column(String(300))
     profile_description = Column(Text)
     phone = Column(String(20), nullable=True)
     location = Column(String(100))
-
     birth_date = Column(Date)
     languages_spoken = Column(String(100))
     experience_with = Column(Text)
     certifications = Column(Text)
     certification_files = Column(String(300))
 
-    account = relationship("Users", back_populates="profile")
+    profile_uploads = relationship(
+        "ProfileUpload",  # refer by name, not by symbol
+        primaryjoin="foreign(ProfileUpload.user_id) == UserProfile.user_id",
+        back_populates="profile_owner",
+        lazy="selectin",
+        cascade="all, delete-orphan",
+    )
+
+    account = relationship("Users", back_populates="profile", uselist=False)
 
     public_fields: JSON = Column(JSON, default=[])
 

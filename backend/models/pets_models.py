@@ -16,27 +16,27 @@ class Pets(Base):
     species = Column(String(100), nullable=False)
     subspecies = Column(String(100), nullable=True)
     gender = Column(String(20), nullable=True)
-
-    profile_image_id = Column(Integer, ForeignKey("uploaded_files.id"), nullable=True)
-    profile_image = relationship("UploadedFile", foreign_keys=[profile_image_id])
-
     profile_description = Column(Text, nullable=False, default="")
     created_at = Column(DateTime, default=func.now())
 
     parent_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     #parent = relationship("Users", back_populates="pets")
-
-    # uploaded_files = relationship("UploadedFile", back_populates="pet")
-    uploaded_files = relationship(
-        "UploadedFile",
-        #back_populates="pet",
-        foreign_keys="UploadedFile.pet_id"
+    #roles = relationship('Roles', back_populates='pet', lazy=True)
+    pet_data = relationship(
+    'PetData',
+    back_populates = 'pet',  # prefer explicit back_populates to backref
+    uselist = False,  # ← THIS makes it a one-to-one
+    lazy = 'selectin',  # eager-load it in one go
+    cascade = 'all, delete-orphan',
     )
 
+    profile_uploads = relationship(
+        "ProfileUpload",
+        back_populates="pet",
+        lazy="selectin",
+        cascade="all, delete-orphan",
+    )
 
-
-    #roles = relationship('Roles', back_populates='pet', lazy=True)
-    pet_data = relationship('PetData', backref='pet', lazy=True)
     medical_profile = relationship(
         "MedicalProfile",      # string avoids circular import
         back_populates="pet",
@@ -64,6 +64,11 @@ class PetData(Base):
     behavior_notes = Column(Text, nullable=False, default="")
     additional_info = Column(Text, nullable=False, default="")
 
+    pet = relationship(
+    "Pets",
+    back_populates = "pet_data",
+    lazy = "selectin",
+    )
     user = relationship("Users", backref="pet_data")
 
 
