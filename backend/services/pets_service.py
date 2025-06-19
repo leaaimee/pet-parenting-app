@@ -289,20 +289,20 @@ async def replace_pet_profile_image_service(
         raise InternalError("Failed to replace file. Please try again.")
 
 
-
-# Helper checks
-def is_pet_data_empty(data: PetData) -> bool:
-    return all(not getattr(data, f) for f in (
-        "favorite_things", "dislikes", "social_style", "communication",
-        "preferred_treats", "diet", "allergies", "medical_alerts",
-        "behavior_notes", "additional_info"
-    ))
-
-def is_pet_profile_empty(pet: Pets) -> bool:
-    return all(not getattr(pet, attr) for attr in (
-        "birthday", "birth_year", "birth_month", "subspecies",
-        "gender", "profile_image_id", "profile_description"
-    ))
+async def show_pet_data_service(
+    pet_id: int,
+    parent_id: int,
+    session: AsyncSession
+) -> PetData:
+    result = await session.execute(
+        select(PetData)
+        .join(Pets, PetData.pet_id == Pets.id)
+        .where(PetData.pet_id == pet_id, Pets.parent_id == parent_id)
+    )
+    pet_data = result.scalar_one_or_none()
+    if not pet_data:
+        raise NotFoundError("Pet not found or access denied.")
+    return pet_data
 
 
 async def add_pet_data_service(
@@ -325,7 +325,6 @@ async def add_pet_data_service(
     except SQLAlchemyError:
         await session.rollback()
         raise InternalError("Failed to add pet data. Try again later.")
-
 
 
 async def edit_pet_data_service(
@@ -354,6 +353,22 @@ async def edit_pet_data_service(
     except SQLAlchemyError:
         await session.rollback()
         raise InternalError("Failed to update pet data. Try again later.")
+
+
+
+# Helper checks
+def is_pet_data_empty(data: PetData) -> bool:
+    return all(not getattr(data, f) for f in (
+        "favorite_things", "dislikes", "social_style", "communication",
+        "preferred_treats", "diet", "allergies", "medical_alerts",
+        "behavior_notes", "additional_info"
+    ))
+
+def is_pet_profile_empty(pet: Pets) -> bool:
+    return all(not getattr(pet, attr) for attr in (
+        "birthday", "birth_year", "birth_month", "subspecies",
+        "gender", "profile_image_id", "profile_description"
+    ))
 
 
 

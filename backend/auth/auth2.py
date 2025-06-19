@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from sys import exception
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
@@ -16,53 +15,33 @@ from jose import JWTError, jwt
 from dotenv import load_dotenv
 import os
 
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from fastapi import HTTPException
+from backend.models.users_models import Users
+from sqlalchemy import select
+
+
+
 load_dotenv()
 
 
-# 🔐 Security config
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "fallback-secret")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
-# Password hashing - by Charles
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Token scheme for protected routes - by Charles
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-# base verify - by Charles
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
 
-# get pw verify - by Charles
 def get_password_hash(password):
     return pwd_context.hash(password)
-
-
-from sqlalchemy.ext.asyncio import AsyncSession
-
-
-# Charles Version
-# async def get_user(email: str, session: AsyncSession):
-#     try:
-#         result = await session.execute(select(Users).where(Users.email == email))
-#         user_from_db = result.scalar_one_or_none()  # Awaited the result
-#         if user_from_db:
-#             return UserPublic.from_orm(user_from_db)  # Use from_orm for Pydantic schema validation
-#         else:
-#             return None  # Explicitly return None if no user is found
-#     except Exception as e:
-#         return e
-
-
-
-from fastapi import HTTPException
-from backend.schemas.user_schema import UserAccountShowSchema
-from backend.models.users_models import Users
-from sqlalchemy import select
-
 
 
 async def get_user(session: AsyncSession, email: str):  #  FIXED order
@@ -77,32 +56,6 @@ async def get_user(session: AsyncSession, email: str):  #  FIXED order
         raise HTTPException(status_code=500, detail="Error accessing user")
 
 
-
-# async def get_current_user(
-#     token: str = Depends(oauth2_scheme),
-#     session: AsyncSession = Depends(get_async_session)
-# ):
-#     credentials_exception = HTTPException(
-#         status_code=status.HTTP_401_UNAUTHORIZED,
-#         detail="Could not validate credentials"
-#     )
-#
-#     try:
-#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-#         email = payload.get("sub")
-#         if not email:
-#             raise credentials_exception
-#     except JWTError:
-#         raise credentials_exception
-#
-#     result = await session.execute(select(Users).where(Users.email == email))
-#     user = result.scalar_one_or_none()
-#     if not user:
-#         raise credentials_exception
-#
-#     return user
-
-# Now implementing
 
 async def authenticate_user(session: AsyncSession, username: str, password: str):
     user = await get_user(session, username)
@@ -121,8 +74,6 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-
-# latest version
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),

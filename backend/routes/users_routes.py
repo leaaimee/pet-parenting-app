@@ -42,7 +42,7 @@ async def protected_test(current_user: dict = Depends(get_current_user)):
 
 
 
-@router.post("/", response_model=UserAccountShowSchema, status_code=201)
+@router.post("/", response_model=UserAccountShowSchema)
 async def register_user_data(
     user_data: UserAccountCreateSchema,
     session: AsyncSession = Depends(get_async_session)
@@ -70,7 +70,6 @@ async def show_private_user_profile_data(
     session: AsyncSession = Depends(get_async_session),
     current_user: Users = Depends(get_current_user),
 ):
-    # Option A: call your existing service
     profile_schema = await show_user_profile_service(
         user_id=current_user.id,
         session=session,
@@ -79,27 +78,29 @@ async def show_private_user_profile_data(
     return profile_schema
 
 
-
 @router.get("/users/{user_id}", response_model=UserProfileShowSchema)
 async def show_public_user_profile_data(
     user_id: int,
     session: AsyncSession = Depends(get_async_session)
 ):
-    return await show_user_profile_service(user_id, session, public=True)
-
+    user_schema = await show_user_profile_service(
+        user_id=user_id,
+        session=session,
+        public=True
+    )
+    return user_schema
 
 
 @router.post(
     "/users/me",
     response_model=UserProfileShowSchema,
-    status_code=status.HTTP_200_OK,  # use 200 for upserts
+    status_code=status.HTTP_200_OK,
 )
 async def add_user_profile_data(
     user_data: UserProfileEditSchema,
     session: AsyncSession = Depends(get_async_session),
     current_user: Users = Depends(get_current_user),
 ):
-    # Derive the user_id from the authenticated user
     profile = await add_user_profile_service(
         user_id=current_user.id,
         data=user_data,
@@ -121,7 +122,6 @@ async def edit_user_profile_data(
         session=session,
     )
     return updated_profile
-
 
 
 @router.post("/me/avatar", response_model=ProfileUploadShowSchema)
@@ -152,7 +152,11 @@ async def add_user_profile_image_data(
         subcategory="profile_pic",
         user_id=current_user.id
     )
-
+@router.post(
+    "/users/me/image",
+    response_model=ProfileUploadShowSchema,
+    status_code=status.HTTP_201_CREATED,
+)
 
 
 @router.put(

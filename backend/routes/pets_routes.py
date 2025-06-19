@@ -154,6 +154,20 @@ def get_pet_profile_image_data(subcategory: str, filename: str):
 
 
 
+@router.get("/pets/{pet_id}/data", response_model=PetDataShowSchema)
+async def show_pet_data(
+    pet_id: int,
+    current_user: Users = Depends(get_current_user),
+    session: AsyncSession = Depends(get_async_session),
+):
+    pet_data = await show_pet_data_service(
+        pet_id=pet_id,
+        parent_id=current_user.id,
+        session=session
+    )
+    return pet_data
+
+
 # --- Add pet data ---
 @router.post("/pets/{pet_id}/data", response_model=PetDataAddSchema, status_code=status.HTTP_201_CREATED)
 async def add_pet_data(

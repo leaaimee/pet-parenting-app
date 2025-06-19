@@ -201,8 +201,7 @@ async def show_user_profile_service(user_id: int, session: AsyncSession, public:
         profile = user.profile
 
         if public:
-            public_data = {field: getattr(profile, field, None) for field in user.public_fields or []}
-            # Ensure required schema fields are always populated:
+            public_data = {field: getattr(profile, field, None) for field in profile.public_fields or []}
             public_data.setdefault('id', profile.id)
             public_data.setdefault('name', profile.name)
             return UserProfileShowSchema(**public_data)
