@@ -1,4 +1,5 @@
 from datetime import timedelta
+from sys import prefix
 from typing import Annotated
 
 from fastapi import FastAPI, Depends
@@ -15,6 +16,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from backend.routes.users_routes import router as users_router
 from backend.routes.pets_routes import router as pets_router
+from backend.routes.medical_routes import router as medical_router
 from backend.routes.invitations_routes import router as invitations_router
 
 from sqlalchemy import select
@@ -30,25 +32,25 @@ app = FastAPI()
 
 
 
-@app.get("/demo", response_model=UserAccountShowSchema)
-async def demo(session: AsyncSession = Depends(get_async_session)):
-    user = await get_user(email="leaaimee2010@gmail.com", session=session)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
-
-
-
-@app.get("/debug-user")
-async def debug_user(session: AsyncSession = Depends(get_async_session)):
-    try:
-        result = await session.execute(select(Users).limit(1))
-        user = result.scalar_one_or_none()
-        if user:
-            return {"id": user.id, "email": user.email}
-        return {"message": "No users found"}
-    except Exception as e:
-        return {"error": str(e)}
+# @app.get("/demo", response_model=UserAccountShowSchema)
+# async def demo(session: AsyncSession = Depends(get_async_session)):
+#     user = await get_user(email="leaaimee2010@gmail.com", session=session)
+#     if not user:
+#         raise HTTPException(status_code=404, detail="User not found")
+#     return user
+#
+#
+#
+# @app.get("/debug-user")
+# async def debug_user(session: AsyncSession = Depends(get_async_session)):
+#     try:
+#         result = await session.execute(select(Users).limit(1))
+#         user = result.scalar_one_or_none()
+#         if user:
+#             return {"id": user.id, "email": user.email}
+#         return {"message": "No users found"}
+#     except Exception as e:
+#         return {"error": str(e)}
 
 
 @app.post("/token")
@@ -67,15 +69,16 @@ async def login_for_access_token(
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": str(user.id)},  # 🔥 FIXED
+        data={"sub": str(user.id)},  # FIXED
         expires_delta=access_token_expires
     )
     return Token(access_token=access_token, token_type="bearer")
 
 
 
-app.include_router(users_router, prefix="/api/v2", tags=["Users v2"])
+app.include_router(users_router, prefix="/api/v2", tags=["Users"])
 app.include_router(pets_router, prefix="/api/v2", tags=["Pets"])
+app.include_router(medical_router, prefix="/api/v2", tags=["Medical"])
 app.include_router(invitations_router, prefix="/api/v2", tags=["Invitations"])
 
 

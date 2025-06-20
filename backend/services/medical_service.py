@@ -31,6 +31,8 @@ def prepare_medical_profile_service(
     pet_id: int
 ) -> dict:
     """Prepare medical profile data for creation"""
+    print("weight_updated came in as:", type(data.weight_updated), data.weight_updated)
+
     return {
         "pet_id": pet_id,
         "blood_type": data.blood_type,

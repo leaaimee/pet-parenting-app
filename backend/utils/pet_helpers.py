@@ -1,44 +1,67 @@
-from datetime import datetime, date
-
-
-
-from typing import Optional
+from typing import Optional, Tuple
 from datetime import date
 
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+
+from backend.models.pets_models import Pets
+from backend.domain.exceptions import NotFoundError
+
+
+
 def pet_birthday(
-    birthday: Optional[date],
-    birth_year: Optional[int],
-    birth_month: Optional[int]
-) -> tuple[Optional[date], Optional[int], Optional[int]]:
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+    day: Optional[date] = None,
+) -> Tuple[Optional[date], Optional[int], Optional[int]]:
     """
-    Returns (birthday, birth_year, birth_month)
+    Normalize the pet’s birthday information into:
+      (birthday: date | None,
+       birth_year: int    | None,
+       birth_month: int   | None)
 
-    If full birthday is provided, uses that.
-    Otherwise returns (None, birth_year, birth_month) for partial input.
+    - If `day` is provided (a full date), we extract year/month/day.
+    - Else if only `year` + `month` are provided, we pick the 1st of that month.
+    - Else if only `year` is provided, we default to January 1st of that year.
+    - Otherwise, we return (None, None, None).
     """
-    if birthday:
-        return birthday, birthday.year, birthday.month
-    return None, birth_year, birth_month
+    if day:
+        # Full date given
+        return day, day.year, day.month
+
+    if year and month:
+        # Year + month known, approximate to first day of month
+        try:
+            approx = date(year, month, 1)
+            return approx, year, month
+        except ValueError:
+            # Bad month (e.g. month=13)? Fall back to January 1st
+            approx = date(year, 1, 1)
+            return approx, year, 1
+
+    if year:
+        # Only year known, approximate to January 1st
+        approx = date(year, 1, 1)
+        return approx, year, 1
+
+    # Nothing known
+    return None, None, None
+
+
+
+async def verify_pet_access(pet_id: int, user_id: int, session: AsyncSession) -> Pets:
+    result = await session.execute(
+        select(Pets).where(Pets.id == pet_id, Pets.parent_id == user_id)
+    )
+    pet = result.scalar_one_or_none()
+    if not pet:
+        raise NotFoundError("Pet not found or access denied.")
+    return pet
 
 
 
 
-# def pet_birthday(birth_year, birth_month, birth_day):
-#     """ setting exact or approximate birthday date """
-#     try:
-#         current_year = datetime.now().year
-#
-#         if isinstance(birth_year, int) and 1900 <= birth_year <= current_year:
-#             if isinstance(birth_month, int) and 1 <= birth_month <= 12:
-#                 if isinstance(birth_day, int):
-#                     try:
-#                         return date(birth_year, birth_month, birth_day), None, None
-#                     except ValueError:
-#                         return None, None, None
-#                 return None, birth_year, birth_month
-#             return None, birth_year, None
-#         return None, None, None
-#
-#     except Exception as e:
-#         print("Unexpected error in pet_birthday:", e)
-#         return None, None, None
+
+
+
+

@@ -5,21 +5,23 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.database import get_async_session
 
-from backend.auth.auth import get_current_user
+from backend.auth.auth2 import get_current_user
 
-
+from backend.models.users_models import Users
 
 from backend.schemas.medical_schema import PetMedicalProfileShowSchema, PetMedicalProfileAddSchema, \
     PetMedicalProfileEditSchema, PetVaccinationShowSchema, PetVaccinationAddSchema, PetVaccinationEditSchema, \
     PetMedicationShowSchema, PetMedicationAddSchema, PetMedicationEditSchema, PetTestResultShowSchema, \
     PetTestResultAddSchema, PetTestResultEditSchema, PetMedicalDocumentShowSchema, PetMedicalDocumentAddSchema, \
     PetMedicalDocumentEditSchema, PetVetVisitShowSchema, PetVetVisitAddSchema, PetVetVisitEditSchema
-from backend.services.pets_service import get_pet_by_id, verify_pet_access
+from backend.services.pets_service import verify_pet_access
 from backend.services.medical_service import get_medical_profile_service, prepare_medical_profile_service, \
     add_medical_profile_service, edit_medical_profile_service, add_vaccination_data_service, \
     edit_vaccination_data_service, add_medication_data_service, edit_medication_data_service, \
     add_test_result_data_service, edit_test_result_data_service, add_vet_visit_data_service, \
     edit_vet_visit_data_service, add_medical_document_service, edit_medical_document_service
+
+from backend.domain.exceptions import NotFoundError
 
 router = APIRouter()
 
@@ -27,16 +29,12 @@ router = APIRouter()
 async def get_medical_profile_data(
     pet_id: int,
     session: AsyncSession = Depends(get_async_session),
-    current_user: dict = Depends(get_current_user),
+    current_user: Users = Depends(get_current_user)
 ):
     """Get medical profile for a specific pet"""
-    pet = await get_pet_by_id(pet_id, session)
-
-    medical_profile = await get_medical_profile_service(pet_id, current_user["id"], session)
-
+    medical_profile = await get_medical_profile_service(pet_id, current_user.id, session)
     if not medical_profile:
-        raise HTTPException(status_code=404, detail="Medical profile not found")
-
+        raise NotFoundError("Medical profile not found")
     return medical_profile
 
 
@@ -45,21 +43,12 @@ async def add_medical_profile_data(
     pet_id: int,
     medical_data: PetMedicalProfileAddSchema,
     session: AsyncSession = Depends(get_async_session),
-    current_user: dict = Depends(get_current_user)
+    current_user: Users = Depends(get_current_user)
 ):
     """Add medical profile for a specific pet"""
-    pet = await verify_pet_access(pet_id, current_user["id"], session)
-
-    if not pet:
-        raise HTTPException(status_code=404, detail="Pet not found or unauthorized")
-
+    await verify_pet_access(pet_id, current_user.id, session)
     data = prepare_medical_profile_service(medical_data, pet_id)
-    new_medical_data = await add_medical_profile_service(data, session)
-
-    if not new_medical_data:
-        raise HTTPException(status_code=500, detail="Medical profile creation failed")
-
-    return new_medical_data
+    return await add_medical_profile_service(data, session)
 
 
 @router.patch("/pets/{pet_id}/medical_data/edit", response_model=PetMedicalProfileEditSchema)
@@ -67,17 +56,16 @@ async def edit_medical_profile_data(
     pet_id: int,
     medical_data: PetMedicalProfileEditSchema,
     session: AsyncSession = Depends(get_async_session),
-    current_user: dict = Depends(get_current_user)
+    current_user: Users = Depends(get_current_user)
 ):
     """Edit existing medical profile for a specific pet"""
-    updated_medical_profile = await edit_medical_profile_service(
-        pet_id, current_user["id"], medical_data, session
+    updated = await edit_medical_profile_service(
+        pet_id, current_user.id, medical_data, session
     )
+    if not updated:
+        raise NotFoundError("Medical profile not found or unauthorized")
+    return updated
 
-    if not updated_medical_profile:
-        raise HTTPException(status_code=404, detail="Medical profile not found or unauthorized")
-
-    return updated_medical_profile
 
 
 

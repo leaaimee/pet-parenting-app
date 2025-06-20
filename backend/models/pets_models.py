@@ -50,7 +50,7 @@ class Pets(Base):
 class PetData(Base):
     __tablename__ = "pet_data"
     id = Column(Integer, primary_key=True)
-    pet_id = Column(Integer, ForeignKey("pets.id"), nullable=False)
+    pet_id = Column(Integer, ForeignKey("pets.id"), nullable=False, unique=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
     favorite_things = Column(Text, nullable=False, default="")

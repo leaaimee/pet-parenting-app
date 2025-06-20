@@ -21,9 +21,11 @@ from backend.schemas.pet_schema import PetProfileAddSchema, PetDataAddSchema, Pe
 
 from backend.models.pets_models import PetData
 
-from backend.utils.pet_helpers import pet_birthday
+from backend.utils.pet_helpers import pet_birthday, verify_pet_access
 
 from backend.domain.exceptions import NotFoundError, InternalError, PermissionDeniedError, ConflictError
+
+
 
 
 async def get_user_pets_service(user_id: int, session: AsyncSession):
@@ -34,43 +36,7 @@ async def get_user_pets_service(user_id: int, session: AsyncSession):
 
 
 
-def pet_birthday(
-    year: Optional[int] = None,
-    month: Optional[int] = None,
-    day: Optional[date] = None,
-) -> Tuple[Optional[date], Optional[int], Optional[int]]:
-    """
-    Normalize the pet’s birthday information into:
-      (birthday: date | None,
-       birth_year: int    | None,
-       birth_month: int   | None)
 
-    - If `day` is provided (a full date), we extract year/month/day.
-    - Else if only `year` + `month` are provided, we pick the 1st of that month.
-    - Else if only `year` is provided, we default to January 1st of that year.
-    - Otherwise, we return (None, None, None).
-    """
-    if day:
-        # Full date given
-        return day, day.year, day.month
-
-    if year and month:
-        # Year + month known, approximate to first day of month
-        try:
-            approx = date(year, month, 1)
-            return approx, year, month
-        except ValueError:
-            # Bad month (e.g. month=13)? Fall back to January 1st
-            approx = date(year, 1, 1)
-            return approx, year, 1
-
-    if year:
-        # Only year known, approximate to January 1st
-        approx = date(year, 1, 1)
-        return approx, year, 1
-
-    # Nothing known
-    return None, None, None
 
 
 
@@ -295,26 +261,34 @@ async def show_pet_data_service(
     session: AsyncSession
 ) -> PetData:
     result = await session.execute(
-        select(PetData)
-        .join(Pets, PetData.pet_id == Pets.id)
-        .where(PetData.pet_id == pet_id, Pets.parent_id == parent_id)
+        select(Pets).where(Pets.id == pet_id, Pets.parent_id == parent_id)
+    )
+    pet = result.scalar_one_or_none()
+    if not pet:
+        raise NotFoundError("Pet not found or access denied.")
+
+    result = await session.execute(
+        select(PetData).where(PetData.pet_id == pet_id)
     )
     pet_data = result.scalar_one_or_none()
     if not pet_data:
-        raise NotFoundError("Pet not found or access denied.")
+        raise NotFoundError("Pet data not found.")
+
     return pet_data
+
 
 
 async def add_pet_data_service(
     pet_id: int, user_id: int, data: PetDataAddSchema, session: AsyncSession
 ) -> PetData:
     # Verify pet exists & owner
-    result = await session.execute(
-        select(Pets).where(Pets.id == pet_id, Pets.parent_id == user_id)
-    )
-    pet = result.scalar_one_or_none()
-    if not pet:
-        raise NotFoundError("Pet not found or access denied.")
+    # result = await session.execute(
+    #     select(Pets).where(Pets.id == pet_id, Pets.parent_id == user_id)
+    # )
+    # pet = result.scalar_one_or_none()
+    # if not pet:
+    #     raise NotFoundError("Pet not found or access denied.")
+    await verify_pet_access(pet_id, user_id, session)
 
     new_data = PetData(pet_id=pet_id, user_id=user_id, **data.dict())
     session.add(new_data)
@@ -331,19 +305,20 @@ async def edit_pet_data_service(
     pet_id: int, user_id: int, data: PetDataEditSchema, session: AsyncSession
 ) -> PetData:
     # Verify pet exists & owner
-    result = await session.execute(
-        select(Pets).where(Pets.id == pet_id, Pets.parent_id == user_id)
-    )
-    pet = result.scalar_one_or_none()
-    if not pet:
-        raise NotFoundError("Pet not found or access denied.")
+    # result = await session.execute(
+    #     select(Pets).where(Pets.id == pet_id, Pets.parent_id == user_id)
+    # )
+    # pet = result.scalar_one_or_none()
+    # if not pet:
+    #     raise NotFoundError("Pet not found or access denied.")
+    await verify_pet_access(pet_id, user_id, session)
 
     # Fetch or create PetData
     result = await session.execute(select(PetData).where(PetData.pet_id == pet_id))
     pet_data = result.scalar_one_or_none() or PetData(pet_id=pet_id, user_id=user_id)
 
     for field, value in data.dict(exclude_unset=True).items():
-        setattr(pet_data, field, value or "")
+        setattr(pet_data, field, value)
 
     session.add(pet_data)
     try:

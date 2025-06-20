@@ -7,7 +7,7 @@ from backend.database import Base
 class MedicalProfile(Base):
     __tablename__ = "medical_profiles"
     id = Column(Integer, primary_key=True)
-    pet_id = Column(Integer, ForeignKey("pets.id"), nullable=False)
+    pet_id = Column(Integer, ForeignKey("pets.id"), nullable=False, unique=True)
     blood_type = Column(String(10))
     weight = Column(String(20), nullable=True, default="")
     weight_updated = Column(String(20), nullable=True)
