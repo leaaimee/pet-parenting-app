@@ -33,11 +33,13 @@ router = APIRouter()
 
 from alembic import command
 from alembic.config import Config
+
 @router.post("/run-migrations")
 async def run_migrations():
-    alembic_cfg = Config("alembic.ini")
-    command.upgrade(alembic_cfg, "head")
-    return {"status": "migrations applied"}
+    cfg = Config("alembic.ini")
+    cfg.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL"])
+    command.upgrade(cfg, "head")
+    return {"detail": "Migrations applied"}
 
 
 @router.get("/protected-test")
