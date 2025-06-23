@@ -2,6 +2,7 @@ from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, Form, File
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.functions import current_user
 
 from backend.database import get_async_session
 
@@ -19,7 +20,8 @@ from backend.services.medical_service import get_medical_profile_service, prepar
     add_medical_profile_service, edit_medical_profile_service, add_vaccination_data_service, \
     edit_vaccination_data_service, add_medication_data_service, edit_medication_data_service, \
     add_test_result_data_service, edit_test_result_data_service, add_vet_visit_data_service, \
-    edit_vet_visit_data_service, add_medical_document_service, edit_medical_document_service
+    edit_vet_visit_data_service, add_medical_document_service, edit_medical_document_service, \
+    show_vaccination_data_service, show_medication_data_service
 
 from backend.domain.exceptions import NotFoundError
 
@@ -67,6 +69,17 @@ async def edit_medical_profile_data(
     return updated
 
 
+@router.get("pets/{pet_id}/medical_data/vaccinations", response_model=PetVaccinationShowSchema)
+async def show_vaccination_data(
+        pet_id: int,
+        session: AsyncSession = Depends(get_async_session),
+        current_user: Users = Depends(get_current_user)
+):
+    """Show vaccination data for a specific pet"""
+    vaccination_data = await show_vaccination_data_service(pet_id, current_user.id, session)
+    if not vaccination_data:
+        raise NotFoundError("Vaccination data not found")
+    return vaccination_data
 
 
 @router.post("/pets/{pet_id}/medical_data/vaccinations", response_model=PetVaccinationShowSchema)
@@ -74,13 +87,13 @@ async def add_vaccination_data(
         pet_id: int,
         vaccination_data: PetVaccinationAddSchema,
         session: AsyncSession = Depends(get_async_session),
-        current_user: dict = Depends(get_current_user)
+        current_user: Users = Depends(get_current_user)
 ):
     """Add vaccination record for a specific pet"""
-    new_vaccination_data = await add_vaccination_data_service(pet_id, vaccination_data, session, current_user["id"])
+    new_vaccination_data = await add_vaccination_data_service(pet_id, vaccination_data, session, current_user.id)
 
     if not new_vaccination_data:
-        raise HTTPException(status_code=404, detail="Could not add vaccination data")
+        raise NotFoundError("Could not add vaccination data")
 
     return new_vaccination_data
 
@@ -91,15 +104,31 @@ async def edit_vaccination_data(
     vaccination_id: int,
     vaccination_data: PetVaccinationEditSchema,
     session: AsyncSession = Depends(get_async_session),
-    current_user: dict = Depends(get_current_user)
+    current_user: Users = Depends(get_current_user)
 ):
     """Edit existing vaccination record for a specific pet"""
-    edited_vaccination_data = await edit_vaccination_data_service(pet_id, vaccination_id, vaccination_data, session, current_user["id"])
+    edited_vaccination_data = await edit_vaccination_data_service(pet_id, vaccination_id, vaccination_data, session, current_user.id)
 
     if not edited_vaccination_data:
-        raise HTTPException(status_code=404, detail="Vaccination record not found or unauthorized")
+        raise NotFoundError("Vaccination record not found or unauthorized")
 
     return edited_vaccination_data
+
+
+@router.get("/pets/{pet_id}/medical_data/medications", response_model=PetMedicationShowSchema)
+async def show_medication_data(
+        pet_id: int,
+        session: AsyncSession = Depends(get_async_session),
+        current_user: Users = Depends(get_current_user)
+):
+    """Display medication record for a specific pet"""
+    medication_data = await show_medication_data_service(pet_id, session, current_user.id)
+
+    if not medication_data:
+        raise NotFoundError("Medication data not found")
+
+    return medication_data
+
 
 
 @router.post("/pets/{pet_id}/medical_data/medications", response_model=PetMedicationShowSchema)
@@ -110,10 +139,10 @@ async def add_medication_data(
     current_user: dict = Depends(get_current_user)
 ):
     """Add medication record for a specific pet"""
-    new_medication_data = await add_medication_data_service(pet_id, medication_data, session, current_user["id"])
+    new_medication_data = await add_medication_data_service(pet_id, medication_data, session, current_user.id)
 
     if not new_medication_data:
-        raise HTTPException(status_code=404, detail="Could not add medication data")
+        raise NotFoundError("Could not add medication data")
 
     return new_medication_data
 
@@ -127,10 +156,10 @@ async def edit_medication_data(
     current_user: dict = Depends(get_current_user)
 ):
     """Edit existing medication record for a specific pet"""
-    edited_medication_data = await edit_medication_data_service(pet_id, medication_id, medication_data, session, current_user["id"])
+    edited_medication_data = await edit_medication_data_service(pet_id, medication_id, medication_data, session, current_user.id)
 
     if not edited_medication_data:
-        raise HTTPException(status_code=404, detail="Medication record not found or unauthorized")
+        raise NotFoundError("Medication record not found or unauthorized")
 
     return edited_medication_data
 
@@ -143,10 +172,10 @@ async def add_test_result_data(
     current_user: dict = Depends(get_current_user)
 ):
     """Add test result record for a specific pet"""
-    new_test_result_data = await add_test_result_data_service(pet_id, test_result_data, session, current_user["id"])
+    new_test_result_data = await add_test_result_data_service(pet_id, test_result_data, session, current_user.id)
 
     if not new_test_result_data:
-        raise HTTPException(status_code=404, detail="Could not add test result data")
+        raise NotFoundError("Could not add test result data")
 
     return new_test_result_data
 
@@ -160,10 +189,10 @@ async def edit_test_result_data(
     current_user: dict = Depends(get_current_user)
 ):
     """Edit existing test result record for a specific pet"""
-    edited_test_result_data = await edit_test_result_data_service(pet_id, test_result_id, test_result_data, session, current_user["id"])
+    edited_test_result_data = await edit_test_result_data_service(pet_id, test_result_id, test_result_data, session, current_user.id)
 
     if not edited_test_result_data:
-        raise HTTPException(status_code=404, detail="Test result record not found or unauthorized")
+        raise NotFoundError("Test result record not found or unauthorized")
 
     return edited_test_result_data
 
@@ -181,12 +210,12 @@ async def add_vet_visit_data(
         pet_id,
         vet_visit_data,
         session,
-        current_user["id"],
+        current_user.id,
         file
     )
 
     if not new_vet_visit_data:
-        raise HTTPException(status_code=404, detail="Could not add vet visit data")
+        raise NotFoundError("Could not add vet visit data")
 
     return new_vet_visit_data
 
@@ -206,12 +235,12 @@ async def edit_vet_visit_data(
         vet_visit_id,
         vet_visit_data,
         session,
-        current_user["id"],
+        current_user.id,
         file
     )
 
     if not updated_vet_visit:
-        raise HTTPException(status_code=404, detail="Vet visit not found or unauthorized")
+        raise NotFoundError("Vet visit not found or unauthorized")
 
     return updated_vet_visit
 

@@ -10,9 +10,10 @@ from backend.schemas.medical_schema import PetMedicalProfileAddSchema, PetMedica
     PetVaccinationAddSchema, PetVaccinationEditSchema, PetMedicationAddSchema, PetMedicationEditSchema, \
     PetTestResultAddSchema, PetTestResultEditSchema, PetVetVisitAddSchema, PetVetVisitEditSchema, \
     PetMedicalDocumentAddSchema, PetMedicalDocumentEditSchema
-from backend.services.helpers.general_helpers import apply_updates
+
 from backend.services.pets_service import verify_pet_access
 from backend.utils.upload_helper import save_uploaded_file
+from backend.utils.update_helper import apply_updates
 
 
 async def get_medical_profile_service(pet_id: int, user_id: int, session: AsyncSession):
@@ -68,13 +69,31 @@ async def edit_medical_profile_service(
     if not medical_profile:
         return None
 
-    for field, value in data.dict(exclude_unset=True).items():
-        if value is not None:
-            setattr(medical_profile, field, value)
+    # for field, value in data.dict(exclude_unset=True).items():
+    #     if value is not None:
+    #         setattr(medical_profile, field, value)
+    apply_updates(medical_profile, data)
 
     await session.commit()
     await session.refresh(medical_profile)
     return medical_profile
+
+
+
+async def show_vaccination_data_service(
+        pet_id: int,
+        user_id: int,
+        session: AsyncSession
+):
+    """Display vaccination record for a specific pet"""
+    pet = await verify_pet_access(pet_id, user_id, session)
+    if not pet:
+        return None
+
+    result = await session.execute(
+        select(VaccinationRecord).where(VaccinationRecord.pet_id == pet_id)
+    )
+    return result.scalar_one_or_none()
 
 
 async def add_vaccination_data_service(
@@ -129,13 +148,30 @@ async def edit_vaccination_data_service(
     if not record:
         return None
 
-    for field, value in vaccination_data.dict(exclude_unset=True).items():
-        setattr(record, field, value or "")
-    # TODO: Replace setattr loop with apply_updates helper when fresh
+    # for field, value in vaccination_data.dict(exclude_unset=True).items():
+    #     setattr(record, field, value)
+    apply_updates(record, vaccination_data)
 
     await session.commit()
     await session.refresh(record)
     return record
+
+
+async def show_medication_data_service(
+        pet_id: int,
+        session: AsyncSession,
+        user_id: int
+):
+    """Display a medication record linked to the pet's medical profile"""
+    pet = await verify_pet_access(pet_id, user_id, session)
+    if not pet:
+        return None
+
+    medication_data = await session.execute(
+        select(Medication).where(Medication.pet_id == pet_id)
+    )
+
+    return medication_data.scalar_one_or_none()
 
 
 async def add_medication_data_service(
@@ -260,7 +296,6 @@ async def edit_test_result_data_service(
         empty_string_fields={"result", "additional_info"}
     )
 
-    # 4. Save to DB
     await session.commit()
     await session.refresh(record)
     return record

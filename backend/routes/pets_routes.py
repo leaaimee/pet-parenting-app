@@ -14,7 +14,7 @@ from backend.models.users_models import Users
 from backend.schemas.media_schema import ProfileUploadShowSchema
 
 from backend.schemas.pet_schema import PetBasicSchema, PetProfileShowSchema, PetDataShowSchema
-from backend.services.helpers.uploads import save_file_to_model
+from backend.utils.uploads import save_file_to_model
 
 from backend.services.pets_service import *
 

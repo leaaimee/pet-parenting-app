@@ -57,7 +57,7 @@ class PetVaccinationShowSchema(BaseModel):
 
 class PetVaccinationAddSchema(BaseModel):
     vaccine_name: str | None = None
-    dose_number: str | None = None
+    dose_number: int | None = None
     batch_number: str | None = None
     previous_vaccination_date: date | None = None
     next_vaccination_date: str | None = None
@@ -69,7 +69,7 @@ class PetVaccinationAddSchema(BaseModel):
 
 class PetVaccinationEditSchema(BaseModel):
     vaccine_name: str | None = None
-    dose_number: str | None = None
+    dose_number: int | None = None
     batch_number: str | None = None
     previous_vaccination_date: date | None = None
     next_vaccination_date: str | None = None

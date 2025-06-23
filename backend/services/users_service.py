@@ -3,8 +3,6 @@ import mimetypes
 from fastapi.responses import FileResponse
 from fastapi import HTTPException
 
-from datetime import datetime
-
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
@@ -18,13 +16,12 @@ from passlib.hash import bcrypt
 from backend.auth.auth2 import get_password_hash
 from backend.domain.exceptions import NotFoundError, InternalError
 from backend.models.media_models import ProfileUpload
-from backend.services.helpers.uploads import save_file_to_model
+from backend.utils.uploads import save_file_to_model
 from backend.utils.upload_helper import get_upload_subpath, VALID_SUBCATEGORIES
 from backend.models.users_models import Users, UserProfile
 from backend.models.pets_models import Pets
 from backend.schemas.user_schema import UserAccountCreateSchema, UserProfileEditSchema, UserLoginSchema, \
     UserProfileShowSchema
-from backend.utils.upload_helper import save_uploaded_file
 from backend.auth.auth2 import create_access_token
 
 

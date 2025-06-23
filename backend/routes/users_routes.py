@@ -1,22 +1,18 @@
-from email.policy import default
 import os
 import mimetypes
 
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
-from pycparser.ply.yacc import resultlimit
+from fastapi import HTTPException, UploadFile
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.functions import user
 from starlette import status
 from sqlalchemy.future import select
 
 from backend.models.media_models import ProfileUpload
 from backend.models.users_models import Users
-from backend.auth.auth2 import get_user
 from backend.schemas.media_schema import ProfileUploadShowSchema
-from backend.services.helpers.uploads import save_file_to_model, save_user_avatar
+from backend.utils.uploads import save_file_to_model, save_user_avatar
 from backend.services.users_service import register_user_service, show_user_profile_service, add_user_profile_service, edit_user_profile_service
-from backend.services.users_service import login_user_service, get_user_profile_image_service
+from backend.services.users_service import login_user_service
 from backend.services.users_service import delete_user_profile_service, delete_user_account_service
 
 from backend.schemas.user_schema import UserLoginSchema, UserProfileEditSchema, UserProfileShowSchema, UserAccountShowSchema, UserAccountCreateSchema
