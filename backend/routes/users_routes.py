@@ -31,6 +31,14 @@ from backend.utils.upload_helper import get_upload_subpath, VALID_SUBCATEGORIES
 router = APIRouter()
 
 
+from alembic import command
+from alembic.config import Config
+@router.post("/run-migrations")
+async def run_migrations():
+    alembic_cfg = Config("alembic.ini")
+    command.upgrade(alembic_cfg, "head")
+    return {"status": "migrations applied"}
+
 
 @router.get("/protected-test")
 async def protected_test(current_user: dict = Depends(get_current_user)):
