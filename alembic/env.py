@@ -31,7 +31,8 @@ config = context.config
 
 from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
-config.set_main_option("sqlalchemy.url", str(DATABASE_URL.get_secret_value()))
+import os
+config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))
 
 
 
