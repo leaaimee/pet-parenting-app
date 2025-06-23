@@ -36,10 +36,15 @@ from alembic.config import Config
 
 @router.post("/run-migrations")
 async def run_migrations():
+    from alembic import command
+    from alembic.config import Config
+    import os
+
     cfg = Config("alembic.ini")
-    cfg.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL"])
+    cfg.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL", ""))
     command.upgrade(cfg, "head")
-    return {"detail": "Migrations applied"}
+    return {"message": "Migrations applied"}
+
 
 
 @router.get("/protected-test")
