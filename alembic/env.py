@@ -25,14 +25,14 @@ DATABASE_URL = os.getenv("ALEMBIC_DATABASE_URL")
 
 # Alembic config
 config = context.config
-# config.set_main_option("sqlalchemy.url", DATABASE_URL)
+config.set_main_option("sqlalchemy.url", DATABASE_URL)
+
+#experiments for get render db reset
 # config.set_main_option("sqlalchemy.url", str(DATABASE_URL.get_secret_value() if hasattr(DATABASE_URL, "get_secret_value") else DATABASE_URL))
-
-
-from sqlalchemy import engine_from_config, pool
-from logging.config import fileConfig
-import os
-config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))
+# from sqlalchemy import engine_from_config, pool
+# from logging.config import fileConfig
+# import os
+# config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))
 
 
 
