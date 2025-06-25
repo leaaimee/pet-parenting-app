@@ -1,16 +1,15 @@
 from datetime import timedelta
-from sys import prefix
+
 from typing import Annotated
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.auth.auth2 import get_user, authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token
+from backend.auth.auth2 import authenticate_user, ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token
 from backend.database import get_async_session
 
-
-from backend.schemas.user_schema import Token, UserProfileShowSchema, UserAccountShowSchema, UserPublic
+from backend.schemas.user_schema import Token
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -19,13 +18,13 @@ from backend.routes.pets_routes import router as pets_router
 from backend.routes.medical_routes import router as medical_router
 from backend.routes.invitations_routes import router as invitations_router
 
-from sqlalchemy import select
-from backend.models.users_models import Users
 
 from fastapi.responses import JSONResponse
 from backend.domain.exceptions import NotFoundError, PermissionDeniedError, ConflictError, InternalError
 
-
+# Temp
+from backend.database import engine, Base
+from backend.models import users_models, pets_models, medical_models, media_models
 
 
 app = FastAPI()
@@ -51,6 +50,12 @@ app = FastAPI()
 #         return {"message": "No users found"}
 #     except Exception as e:
 #         return {"error": str(e)}
+
+
+@app.on_event("startup")
+async def startup():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
 
 @app.post("/token")

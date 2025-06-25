@@ -30,9 +30,11 @@ from backend.utils.upload_helper import get_upload_subpath, VALID_SUBCATEGORIES
 
 router = APIRouter()
 
+
 @router.get("/ping")
 async def ping():
     return {"pong": True}
+
 
 
 @router.get("/protected-test")
