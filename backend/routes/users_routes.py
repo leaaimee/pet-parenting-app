@@ -30,20 +30,9 @@ from backend.utils.upload_helper import get_upload_subpath, VALID_SUBCATEGORIES
 
 router = APIRouter()
 
-# Render experiment
-# from alembic import command
-# from alembic.config import Config
-# @router.post("/run-migrations")
-# async def run_migrations():
-#     from alembic import command
-#     from alembic.config import Config
-#     import os
-#
-#     cfg = Config("alembic.ini")
-#     cfg.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL", ""))
-#     command.upgrade(cfg, "head")
-#     return {"message": "Migrations applied"}
-
+@router.get("/ping")
+async def ping():
+    return {"pong": True}
 
 
 @router.get("/protected-test")
