@@ -78,18 +78,18 @@ async def register_user_service(
 
 
 
-async def login_user_service(user_data: UserLoginSchema, session: AsyncSession):
-    """Authenticate user and return access token placeholder"""
-    result = await session.execute(
-        select(Users).where(Users.email == user_data.email)
-    )
-    user = result.scalar_one_or_none()
-
-    if not user or not bcrypt.verify(user_data.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-
-    token = create_access_token({"sub": str(user.id)})
-    return {"access_token": token, "token_type": "bearer"}
+# async def login_user_service(user_data: UserLoginSchema, session: AsyncSession):
+#     """Authenticate user and return access token placeholder"""
+#     result = await session.execute(
+#         select(Users).where(Users.email == user_data.email)
+#     )
+#     user = result.scalar_one_or_none()
+#
+#     if not user or not bcrypt.verify(user_data.password, user.password_hash):
+#         raise HTTPException(status_code=401, detail="Invalid email or password")
+#
+#     token = create_access_token({"sub": str(user.id)})
+#     return {"access_token": token, "token_type": "bearer"}
 
 
 

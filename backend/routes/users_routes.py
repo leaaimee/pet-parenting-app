@@ -7,12 +7,21 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from sqlalchemy.future import select
 
+
+from fastapi import status, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from backend.database import get_async_session
+from backend.schemas.user_schema import UserAccountCreateSchema, UserAccountShowSchema
+from backend.services.users_service import register_user_service
+
+
+
+
 from backend.models.media_models import ProfileUpload
 from backend.models.users_models import Users
 from backend.schemas.media_schema import ProfileUploadShowSchema
 from backend.utils.uploads import save_file_to_model, save_user_avatar
 from backend.services.users_service import register_user_service, show_user_profile_service, add_user_profile_service, edit_user_profile_service
-from backend.services.users_service import login_user_service
 from backend.services.users_service import delete_user_profile_service, delete_user_account_service
 
 from backend.schemas.user_schema import UserLoginSchema, UserProfileEditSchema, UserProfileShowSchema, UserAccountShowSchema, UserAccountCreateSchema
@@ -43,26 +52,39 @@ async def protected_test(current_user: dict = Depends(get_current_user)):
 
 
 
-@router.post("/", response_model=UserAccountShowSchema)
-async def register_user_data(
+@router.post(
+    "/users",
+    response_model=UserAccountShowSchema,
+    status_code=status.HTTP_201_CREATED,
+    summary="Register a new user",
+)
+async def register_user_data_new(
     user_data: UserAccountCreateSchema,
-    session: AsyncSession = Depends(get_async_session)
+    session: AsyncSession = Depends(get_async_session),
 ):
     new_user = await register_user_service(user_data, session)
-
     return {
-    "id": new_user.id,
-    "email": new_user.email,
-    "created_at": new_user.created_at
-}
+        "id": new_user.id,
+        "email": new_user.email,
+        "created_at": new_user.created_at,
+    }
 
-
-@router.post("/login")
-async def login_user_data(
-    user_data: UserLoginSchema,
-    session: AsyncSession = Depends(get_async_session)
+@router.post("/", include_in_schema=False)
+async def register_user_data_alias(
+    user_data: UserAccountCreateSchema,
+    session: AsyncSession = Depends(get_async_session),
 ):
-    return await login_user_service(user_data, session)
+    # Delegate to the new canonical route
+    return await register_user_data_new(user_data, session)
+
+
+
+# @router.post("/login")
+# async def login_user_data(
+#     user_data: UserLoginSchema,
+#     session: AsyncSession = Depends(get_async_session)
+# ):
+#     return await login_user_service(user_data, session)
 
 
 

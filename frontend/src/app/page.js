@@ -1,11 +1,19 @@
-import { redirect } from "next/navigation";
+"use client";
 
-export default function Home() {
-  const userIsLoggedIn = true; // 🔒 Replace with real logic when ready
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-  if (userIsLoggedIn) {
-    redirect("/homebase");
-  }
+export default function LandingPage() {
+  const router = useRouter();
 
-  return null; // or your login page in the future
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      router.push("/homebase");
+    } else {
+      router.push("/auth");
+    }
+  }, []);
+
+  return null;
 }
