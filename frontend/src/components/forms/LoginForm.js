@@ -32,22 +32,26 @@ export default function LoginForm() {
     <form onSubmit={handleLogin} className="space-y-5 text-inherit">
       <div>
         <label htmlFor="email" className="block text-sm mb-1">Email</label>
-        <input
-          id="email"
-          className="w-full px-4 py-2 rounded-xl bg-white border border-[#3A3633] focus:outline-none focus:ring-2 focus:ring-[#A3E635]"
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+      <input
+        id="email"
+        className="w-full px-4 py-3 rounded-[var(--radius-input)] bg-white text-[#1B1A1F]
+                   placeholder:text-black/50 border border-black/10
+                   focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:border-transparent shadow-sm"
+        type="email"
+        placeholder="you@example.com"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
       </div>
 
       <div>
         <label htmlFor="password" className="block text-sm mb-1">Password</label>
         <input
           id="password"
-          className="w-full px-4 py-2 rounded-xl bg-white border border-[#3A3633] focus:outline-none focus:ring-2 focus:ring-[#A3E635]"
+          className="w-full px-4 py-3 rounded-[var(--radius-input)] bg-white text-[#1B1A1F]
+                     placeholder:text-black/50 border border-black/10
+                     focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:border-transparent shadow-sm"
           type="password"
           placeholder="••••••••"
           value={password}

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import PetCard from "@/components/PetCard";
-import UserCard from "@/components/UserCard";
+import PetCard from "@/components/features/PetCard";
+import UserCard from "@/components/features/UserCard";
 import { mockUserProfile, mockPetProfiles } from "@/mock/mockData";
 import { Questrial } from "next/font/google";
 

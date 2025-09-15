@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import LoginForm from "@/components/LoginForm";
-import RegisterForm from "@/components/RegisterForm";
+import LoginForm from "@/components/forms/LoginForm";
+import RegisterForm from "@/components/forms/RegisterForm";
 import { Questrial } from "next/font/google";
 
 const questrial = Questrial({
@@ -26,7 +26,7 @@ export default function AuthPage() {
           </p>
         </header>
 
-        <div className="bg-[#cbe7eb] text-[#1B1A1F] border border-white/10 rounded-[32px] shadow-md p-8 transition-colors duration-300">
+        <div className="colorscheme-light bg-[#cbe7eb] text-[#1B1A1F] border border-white/10 rounded-[32px] shadow-md p-8 transition-colors duration-300">
           {isLoginMode ? <LoginForm /> : <RegisterForm />}
         </div>
 

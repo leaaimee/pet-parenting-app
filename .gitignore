@@ -21,3 +21,11 @@ NOTES.txt
 !README.md
 !*.py
 !*.txt
+
+
+
+
+frontend/node_modules/
+frontend/.next/
+dist/
+*.log

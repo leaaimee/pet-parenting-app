@@ -1,4 +1,23 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import { Questrial } from "next/font/google";
+
+const questrial = Questrial({ weight: "400", subsets: ["latin"], variable: "--font-questrial" });
+
+export const metadata = { title: "Pet Parenting", description: "Sharing care & chaos" };
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body className={`${questrial.variable} bg-[var(--bg)] text-[var(--text)] antialiased`}>
+        {children} {/* pages handle their own padding */}
+      </body>
+    </html>
+  );
+}
+
+
+
+/* import { Geist, Geist_Mono } from "next/font/google";
 import { Anton } from "next/font/google";
 import "./globals.css";
 
@@ -40,3 +59,4 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
+*/

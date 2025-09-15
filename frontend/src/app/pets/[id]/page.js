@@ -1,8 +1,8 @@
 import { mockPetProfiles } from "@/mock/mockData";
 import Link from "next/link";
 
-import PetProfile from "@/components/PetProfile";
-import PetData from "@/components/PetData";
+import PetProfile from "@/components/features/PetProfile";
+import PetData from "@/components/features/PetData";
 import EmptyStateTile from "@/components/EmptyStateTile";
 
 export default function PetDetailPage({ params }) {

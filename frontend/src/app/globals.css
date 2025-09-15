@@ -1,24 +1,76 @@
+:root{
+  --bg:#262229; --text:#F4F4F5; --border:rgba(255,255,255,.1);
+  --ring:#A3E635; --card-radius:32px; --chip-radius:12px;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.25);
+  --shadow-md:0 8px 24px rgba(0,0,0,.30);
+  --radius: 32px;
+  --radius-input: 10px;
+  --radius-chip: 14px;
+}
+
+/*
+Sharp: --radius: 0px;
+Micro: --radius: 6px;
+Soft: --radius: 20px;
+Extreme round --radius: 34px;
+*/
+
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-/*
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+
+/* Your tweaks in matching layers */
+@layer base {
+  /* global element tweaks */
+  html { color-scheme: dark; }
+  body { background: var(--bg); color: var(--text); }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
 
-body {
-  @apply font-sans;
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
+/* Tile palette via CSS variables
+.tone-lavender { --tile-bg:#e6dff1; --tile-fg:#1B1A1F; }
+.tone-aqua     { --tile-bg:#cbe7eb; --tile-fg:#1B1A1F; }
+.tone-rose     { --tile-bg:#f2e0e0; --tile-fg:#1B1A1F; }
+.tone-sand     { --tile-bg:#f3eeea; --tile-fg:#1B1A1F; }
+.tone-cream    { --tile-bg:#fff8ee; --tile-fg:#1B1A1F; } ]
 */
+.tone-lavender { --tile-bg:#DED3F3; --tile-fg:#17161B; } /* a hair richer */
+.tone-aqua     { --tile-bg:#C7EAF0; --tile-fg:#17161B; } /* cooler, brighter */
+.tone-rose     { --tile-bg:#F4DADA; --tile-fg:#17161B; } /* warmer rose */
+.tone-sand     { --tile-bg:#F1EAE2; --tile-fg:#17161B; } /* creamy sand */
+
+
+@layer components {
+  .tile {
+    background-color: var(--tile-bg, rgba(255,255,255,.05));
+    color: var(--tile-fg, var(--text));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .16s, background-color .2s, transform .12s;
+  }
+  .tile:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+}
+
+@layer utilities {
+  /* tiny one-off helpers */
+  .ring-brand { outline: 2px solid var(--ring); outline-offset: 2px; }
+  .colorscheme-light { color-scheme: light; }
+  .square-10 { width: 40px !important; height: 40px !important; }
+  .tile-title { @apply text-xl lg:text-2xl font-semibold tracking-tight; }
+  .tile-body  { @apply text-sm lg:text-base text-black/70; }
+
+
+  /* below my motion lab experiments
+  .rounded-sys { border-radius: var(--radius); }  /* uses your 34px token */
+
+  /* Title helpers (optional but nice) */
+  .tile-title { @apply text-xl lg:text-2xl font-semibold tracking-tight; }
+  .tile-body  { @apply text-sm lg:text-base text-black/70; }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nest-glyph, .nest-word, .nest-underline { animation: none !important; transform: none !important; }
+}
