@@ -1,4 +1,4 @@
-"use client"
+import FontStyle from "@/components/style/FontStyle";
 
 export default function UserCard({
   name,
@@ -11,9 +11,9 @@ export default function UserCard({
   return (
     <div className="bg-transparent p-6">
       <div>
-        <h2 className="text-2xl font-bold">{name}</h2>
-        {pronouns && <p className="text-gray-500">{pronouns}</p>}
-        {location && <p className="text-gray-500">{location}</p>}
+        <FontStyle variant="tileTitle">{name}</FontStyle>
+        {pronouns && <FontStyle variant="value">{pronouns}</FontStyle>}
+        {location && <FontStyle variant="value">{location}</FontStyle>}
       </div>
 
       {profile_description && (
@@ -23,25 +23,16 @@ export default function UserCard({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {languages_spoken && (
           <div>
-            <h4 className="font-semibold text-gray-600">Languages</h4>
-            <p>{languages_spoken}</p>
+            <FontStyle variant="label">Languages</FontStyle>
+            <FontStyle variant="value">{languages_spoken}</FontStyle>
           </div>
         )}
         {experience_with && (
           <div>
-            <h4 className="font-semibold text-gray-600">Experience</h4>
-            <p>{experience_with}</p>
+            <FontStyle variant="label">Experience</FontStyle>
+            <FontStyle variant="value">{experience_with}</FontStyle>
           </div>
         )}
-      </div>
-
-      <div className="pt-4">
-        <button
-          onClick={() => console.log("Edit Profile")}
-          className="text-sm bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-md"
-        >
-          Edit Profile
-        </button>
       </div>
     </div>
   );

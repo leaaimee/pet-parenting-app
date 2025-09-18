@@ -11,7 +11,7 @@ export default function HeaderBar({
       role="banner"
        className={`sticky top-0 z-40 flex items-start justify-between gap-4 ${className}`}
 
-      style={{ height: "64px" }} // fixed row height (adjust if needed)
+
     >
       {/* left side */}
       <div className="flex items-center h-full">

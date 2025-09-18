@@ -8,6 +8,7 @@ import { mockPetProfiles } from "@/mock/mockData";
 import PetProfile from "@/components/features/PetProfile";
 import PetData from "@/components/features/PetData";
 import EmptyStateTile from "@/components/EmptyStateTile";
+import MedicalTile from "@/components/features/MedicalTile";
 
 export default async function PetDetailPage({ params }) {
   const meRes = await authedFetch("/api/v2/users/me");
@@ -63,14 +64,8 @@ export default async function PetDetailPage({ params }) {
         <PetProfile pet={pet} />
         <PetData data={pet.data} />
 
-        <Link href={`/pets/${pet.id}/medical`} className="block w-full">
-          <div className="h-[220px] bg-[#f2e0e0] hover:bg-[#f9eaea] text-[#1B1A1F] border border-white/10 p-6 rounded-[32px] shadow-md hover:shadow-lg transition-colors duration-300 flex flex-col justify-between">
-            <h4 className="text-xl font-semibold mb-2">🩺 Medical Records</h4>
-            <p className="text-sm text-[#1B1A1F]/70">
-              Weight logs, medications, vaccines & test results
-            </p>
-          </div>
-        </Link>
+        {/* Medical Records tile */}
+        <MedicalTile petId={pet.id} />
       </div>
     </section>
   );

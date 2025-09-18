@@ -3,12 +3,13 @@
 export const mockUserProfile = {
   name: "Ellen Ripley",
   pronouns: "she/her",
-  location: "USCSS Nostromo (formerly)",
+  location: "USCSS Nostromo",
   birth_date: "2092-01-07",
-  profile_description: "Warrant Officer. Xenomorph eliminator. Feline mom to Jonesy.",
-  languages_spoken: "English, Binary",
-  experience_with: "Deep space survival, synthetic allies, PTSD management",
+  profile_description: "Warrant Officer. Feline mom to Jonesy.",
+  languages_spoken: "English, W-Y Standard",
+  experience_with: "Xenomorphs, flamethrowers, synthetic allies, PTSD management",
   public_fields: ["location", "experience_with", "profile_description"],
+  avatar_url: "/mock-images/ripley_and_jones_03.jpg",
 };
 
 export const mockPetProfiles = [
@@ -19,6 +20,7 @@ export const mockPetProfiles = [
     species: "Cat",
     subspecies: "Orange Tabby",
     gender: "Male",
+    avatar_url: "/mock-images/jones_cat_alien_web_300x300.jpg",
     profile_description: "Space veteran. Sleeps through alien attacks. Purrs like thunder.",
     data: {
       favorite_things: "Warm engines, tuna packs, hiding in ducts",
