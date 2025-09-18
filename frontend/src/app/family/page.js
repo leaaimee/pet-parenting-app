@@ -1,8 +1,13 @@
+import HeaderBar from "@/components/ui/nav/HeaderBar";
+import AvatarButton from "@/components/ui/nav/AvatarButton";
+import TitlePlain from "@/components/title/TitlePlain";
 import Link from "next/link";
 import PetCard from "@/components/features/PetCard";
 import UserCard from "@/components/features/UserCard";
 import { mockUserProfile, mockPetProfiles } from "@/mock/mockData";
+import { sizes } from "@/design/tokens";
 import { Questrial } from "next/font/google";
+import { authedFetch } from "@/lib/authedFetch";
 
 const questrial = Questrial({
   weight: "400",
@@ -10,21 +15,46 @@ const questrial = Questrial({
   variable: "--font-questrial",
 });
 
-export default function FamilyPage() {
-  return (
-    <section className={`min-h-screen bg-[#262229] text-[#F4F4F5] px-6 py-12 ${questrial.variable}`}>
-      <div className="max-w-screen-lg mx-auto space-y-12">
+
+export default async function FamilyPage() {
+  const meRes = await authedFetch("/api/v2/users/me");
+  if (meRes.status === 401) redirect("/auth");   // same guard as Homebase
+  const me = await meRes.json();
+
+return (
+  <section className="...">
+    <HeaderBar
+      left={
+        <Link href="/homebase" aria-label="Home">
+          <TitlePlain alignNudgeEm={-0.04} />
+        </Link>
+      }
+      rightSlot={
+        <AvatarButton
+          name={me.name || me.username || me.email}
+          src={me.avatar_url || me.image || me.picture}
+          status="online"
+        />
+      }
+      className="mb-4 max-w-screen-lg mx-auto px-6"
+    />
+
+
+      {/* MAIN CONTENT */}
+        <div className="max-w-screen-lg mx-auto px-6 pt-4 pb-10">
 
         {/* PAGE TITLE */}
-        <header className="space-y-2">
-          <h2 className="text-4xl font-[var(--font-questrial)] tracking-tight uppercase">
-            🐾 Your Pet Family
-          </h2>
-          <p className="text-[#F4F4F5] text-lg">
-            All members. One screen. Click to view details.
-          </p>
-        </header>
-
+      <header className="mb-6 space-y-1">
+        <h1
+          className="uppercase text-[var(--text)] mt-1"
+          style={{ fontSize: "clamp(12px, 1.2vw, 30px)", letterSpacing: "0.22em" }}
+        >
+          Your pet family
+        </h1>
+        <p className="text-[#F4F4F5] text-lg">
+          All members. One screen. Click to view details.
+        </p>
+      </header>
         {/* USER CARD */}
         <section className="bg-[#cbe7eb] hover:bg-[#d6eff3] text-[#1B1A1F] border border-white/10 rounded-[32px] shadow-md hover:shadow-lg p-6 transition-colors duration-300 cursor-pointer">
           <Link href="/profile">

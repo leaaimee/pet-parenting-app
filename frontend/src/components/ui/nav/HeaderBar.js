@@ -1,16 +1,26 @@
+// frontend/src/components/ui/nav/HeaderBar.js
+"use client";
+
 export default function HeaderBar({
-  title,
-  subtitle,
-  rightSlot = null,  // e.g., <AvatarButton/>
+  left = null,       // e.g. <TitlePlain />
+  rightSlot = null,  // e.g. <AvatarButton />
   className = "",
 }) {
   return (
-    <header className={`flex items-center justify-between gap-4 ${className}`}>
-      <div>
-        <h1 className="text-[28px] lg:text-5xl tracking-tight uppercase">{title}</h1>
-        {subtitle && <p className="text-sm text-white/70">{subtitle}</p>}
+    <header
+      role="banner"
+       className={`sticky top-0 z-40 flex items-start justify-between gap-4 ${className}`}
+
+      style={{ height: "64px" }} // fixed row height (adjust if needed)
+    >
+      {/* left side */}
+      <div className="flex items-center h-full">
+        {left}
       </div>
-      {rightSlot}
+
+      {/* right side */}
+      <div className="shrink-0 flex items-start">{rightSlot}</div>
     </header>
   );
 }
+
